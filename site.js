@@ -189,8 +189,10 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
             }
         }
 
-        // Update view label
-        updateViewLabel();
+        // Update view label (defined by the View Mode IIFE later in this file —
+        // guard because switchLang may also run during initial page-load before
+        // that IIFE has had a chance to define window.updateViewLabel).
+        if (typeof window.updateViewLabel === 'function') window.updateViewLabel();
 
         // Persist choice across pages
         try { localStorage.setItem('galLang', lang); } catch (_) {}
