@@ -60,22 +60,36 @@ header {
 .header-inner {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 1.4rem 2rem 0.6rem;
+    padding: 0.6rem 2rem 0.4rem;
     text-align: center;
 }
 
-.logo { color: var(--text-bright); text-decoration: none; display: inline-block; }
-.logo:hover { text-decoration: none; color: var(--accent); }
+.logo {
+    color: var(--text-bright);
+    text-decoration: none;
+    display: block;
+    line-height: 0;
+}
+.logo:hover { text-decoration: none; opacity: 0.92; }
 
+.logo-img {
+    display: block;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    max-height: 200px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+/* Legacy text-logo rules kept harmless in case any page still uses them */
 .logo h1 {
     font-size: 2.4rem;
     font-weight: normal;
     letter-spacing: 4px;
     text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-
 .logo .plus { color: var(--accent); font-weight: bold; font-size: 1.1em; }
-
 .subtitle {
     font-size: 0.9rem;
     color: var(--text-muted);
@@ -526,7 +540,10 @@ main {
 .page-content img {
     display: block;
     margin: 1.5rem auto;
+    max-width: 100%;
+    height: auto;
     max-height: 600px;
+    object-fit: contain;
     border: none !important;
     border-radius: var(--radius);
 }
@@ -558,22 +575,178 @@ main {
 .page-content b, .page-content strong { font-weight: 700 !important; }
 .page-content i, .page-content em { font-style: italic !important; }
 
-/* Fix images inside Blogger gallery markup */
+/* Uniform thumbnail grid for Blogger / WordPress galleries.
+   object-fit:contain preserves aspect ratio; neutral background fills the
+   leftover area so portrait + landscape thumbs occupy identical tiles. */
 .page-content .gallery-item,
-.page-content dl.gallery-item {
+.page-content dl.gallery-item,
+.page-content dt.gallery-icon {
     float: none !important;
     display: inline-block !important;
-    width: auto !important;
+    width: 220px !important;
+    height: 220px !important;
     margin: 0.5rem !important;
     vertical-align: top;
+    box-sizing: border-box;
+    background: #f7f7f5;
+    border: 1px solid var(--border, #e6e6e6);
+    border-radius: 6px;
+    overflow: hidden;
 }
 
 .page-content .gallery-item img,
-.page-content dl img {
-    width: auto;
-    max-width: 280px;
-    height: auto !important;
+.page-content dl.gallery-item img,
+.page-content dt.gallery-icon img,
+.page-content table.tr-caption-container img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    background: #f7f7f5 !important;
     border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.page-content .gallery-item a,
+.page-content dl.gallery-item a,
+.page-content dt.gallery-icon a,
+.page-content table.tr-caption-container a {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+    line-height: 0;
+}
+
+.page-content .gallery-item dt.gallery-icon {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.page-content .gallery-item a:hover img,
+.page-content dl.gallery-item a:hover img,
+.page-content dt.gallery-icon a:hover img,
+.page-content table.tr-caption-container a:hover img {
+    transform: scale(1.03);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+
+/* Hide empty / image-less gallery placeholders */
+.page-content dl.gallery-item:empty,
+.page-content dt.gallery-icon:empty {
+    display: none !important;
+}
+.page-content dl.gallery-item.is-empty,
+.page-content dt.gallery-icon.is-empty {
+    display: none !important;
+}
+
+/* Neutralize legacy Blogger float wrappers — we use centered/grid layouts now */
+.page-content a[style*="float"],
+.page-content table[style*="float"] {
+    float: none !important;
+    clear: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Auto-gallery: JS wraps consecutive standalone image-link anchors in a
+   uniform flex grid so multi-image posts sit on aligned, equal-sized tiles */
+.page-content .auto-gallery {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 1.5rem 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+/* every tile inside auto-gallery — uniform box, packs tightly via flex gap */
+.page-content .auto-gallery > a,
+.page-content .auto-gallery > dl.gallery-item,
+.page-content .auto-gallery > dt.gallery-icon,
+.page-content .auto-gallery > table.tr-caption-container {
+    display: block !important;
+    width: 220px !important;
+    height: 220px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f7f7f5 !important;
+    border: 1px solid var(--border, #e6e6e6) !important;
+    border-radius: 6px;
+    overflow: hidden;
+    line-height: 0;
+    box-sizing: border-box;
+    flex: 0 0 220px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.page-content .auto-gallery > a > img,
+.page-content .auto-gallery > dl.gallery-item img,
+.page-content .auto-gallery > dt.gallery-icon img,
+.page-content .auto-gallery > table.tr-caption-container img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    background: #f7f7f5 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+}
+.page-content .auto-gallery > a:hover,
+.page-content .auto-gallery > dl.gallery-item:hover,
+.page-content .auto-gallery > dt.gallery-icon:hover,
+.page-content .auto-gallery > table.tr-caption-container:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.page-content .auto-gallery > a:hover > img,
+.page-content .auto-gallery > dl.gallery-item:hover img,
+.page-content .auto-gallery > dt.gallery-icon:hover img,
+.page-content .auto-gallery > table.tr-caption-container:hover img {
+    transform: none;
+    box-shadow: none;
+}
+/* tr-caption captions: hide inside auto-gallery to keep tiles uniform */
+.page-content .auto-gallery > table.tr-caption-container .tr-caption {
+    display: none;
+}
+/* dt/dd inside dl tiles fill the box */
+.page-content .auto-gallery > dl.gallery-item > dt,
+.page-content .auto-gallery > dl.gallery-item > dt > a {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.page-content table.tr-caption-container {
+    display: inline-block;
+    margin: 0.5rem;
+    border-collapse: collapse;
+    vertical-align: top;
+}
+.page-content table.tr-caption-container .tr-caption {
+    font-size: 0.85rem;
+    color: var(--text-muted, #666);
+    text-align: center;
+    padding-top: 0.35rem;
+    line-height: 1.3;
 }
 
 /* Fix entry-content div from Blogger */
@@ -1086,6 +1259,7 @@ img.broken-img {
 @media (max-width: 768px) {
     .logo h1 { font-size: 1.7rem; letter-spacing: 2px; }
     .subtitle { font-size: 0.78rem; }
+    .logo-img { max-height: 130px; }
 
     .menu-toggle { display: block; }
 
@@ -1129,6 +1303,7 @@ img.broken-img {
     .post-grid { grid-template-columns: 1fr; gap: 1rem; }
     .page-content { padding: 1rem; }
     .logo h1 { font-size: 1.4rem; }
+    .logo-img { max-height: 95px; }
 }
 
 /* ============================================================
@@ -1181,11 +1356,32 @@ main, .page-content, .post-card-body { overflow-wrap: break-word; word-wrap: bre
     visibility: visible;
 }
 .img-overlay img {
-    max-width: 90vw;
-    max-height: 85vh;
+    width: 95vw;
+    height: 90vh;
+    max-width: 95vw;
+    max-height: 90vh;
     object-fit: contain;
     border-radius: var(--radius);
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+.img-overlay.zoomed {
+    overflow: auto;
+    cursor: zoom-out;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1rem;
+}
+.img-overlay.zoomed img {
+    max-width: none;
+    max-height: none;
+    width: auto;
+    height: auto;
+    cursor: zoom-out;
+    border-radius: 0;
 }
 .img-overlay-close {
     position: absolute;

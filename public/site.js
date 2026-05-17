@@ -140,45 +140,219 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
 (function() {
     var overlay = document.createElement('div');
     overlay.className = 'img-overlay';
-    overlay.innerHTML = '<button class="img-overlay-close">&times;</button><img src="" alt="">';
+    overlay.innerHTML = '<button class="img-overlay-close">&times;</button><img alt="">';
     document.body.appendChild(overlay);
 
     var overlayImg = overlay.querySelector('img');
     var closeBtn = overlay.querySelector('.img-overlay-close');
 
     function openOverlay(src) {
+        overlayImg.style.display = '';
         overlayImg.src = src;
         overlay.classList.add('active');
+        overlay.classList.remove('zoomed');
         document.body.style.overflow = 'hidden';
     }
 
     function closeOverlay() {
         overlay.classList.remove('active');
+        overlay.classList.remove('zoomed');
         document.body.style.overflow = '';
     }
 
     overlay.addEventListener('click', closeOverlay);
     closeBtn.addEventListener('click', function(e) { e.stopPropagation(); closeOverlay(); });
-    overlayImg.addEventListener('click', function(e) { e.stopPropagation(); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeOverlay(); });
+    overlayImg.addEventListener('click', function(e) {
+        e.stopPropagation();
+        overlay.classList.toggle('zoomed');
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeOverlay();
+        if (e.key === '+' || e.key === '=') overlay.classList.add('zoomed');
+        if (e.key === '-' || e.key === '0') overlay.classList.remove('zoomed');
+    });
 
     var content = document.querySelector('.page-content');
     if (content) {
         content.addEventListener('click', function(e) {
             var link = e.target.closest('a');
             if (!link) return;
+            if (link.classList.contains('yt-thumb-link')) return;
             var href = link.getAttribute('href') || '';
-            if (href.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            var hrefIsImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(href);
+            if (hrefIsImage) {
                 e.preventDefault();
                 openOverlay(href);
+                return;
+            }
+            var innerImg = link.querySelector('img');
+            if (innerImg && innerImg.getAttribute('src')) {
+                e.preventDefault();
+                openOverlay(innerImg.getAttribute('src'));
             }
         });
     }
 
-    // Hide broken images
+    // Handle broken images. For post-card thumbnails (YouTube thumbs that 404),
+    // swap in a placeholder div so the card keeps its 200px height; otherwise hide.
     var imgs = document.querySelectorAll('img');
     for (var i = 0; i < imgs.length; i++) {
-        imgs[i].addEventListener('error', function() { this.style.display = 'none'; });
+        if (imgs[i].closest('.img-overlay')) continue;
+        imgs[i].addEventListener('error', function() {
+            if (this.classList && this.classList.contains('post-card-image')) {
+                var ph = document.createElement('div');
+                ph.className = 'post-card-placeholder';
+                this.parentNode.insertBefore(ph, this);
+                this.style.display = 'none';
+            } else {
+                this.style.display = 'none';
+            }
+        });
+    }
+
+    // Collapse gallery tiles that contain no image (Blogger leftover markup)
+    var tiles = document.querySelectorAll('.page-content dl.gallery-item, .page-content dt.gallery-icon');
+    for (var t = 0; t < tiles.length; t++) {
+        if (!tiles[t].querySelector('img')) {
+            tiles[t].classList.add('is-empty');
+        }
+    }
+
+    // Auto-gallery: wrap runs of standalone <a><img></a> siblings in a uniform grid
+    function isImageLink(node) {
+        if (!node || node.nodeType !== 1 || node.tagName !== 'A') return false;
+        if (node.closest('.gallery-item, .tr-caption-container, .auto-gallery')) return false;
+        var imgs = node.querySelectorAll('img');
+        if (imgs.length !== 1) return false;
+        if (imgs[0].closest('.img-overlay')) return false;
+        // anchor must contain only the image (no text)
+        if (node.textContent && node.textContent.replace(/\s+/g, '') !== '') return false;
+        return true;
+    }
+    // Step 1: unwrap <div>/<p>/<span> wrappers that contain only image-link anchors
+    // (plus whitespace / <br>). Blogger emits these around photo groups and they
+    // break sibling-run detection. Walk deepest-first so nested wrappers collapse.
+    function unwrapImageOnlyContainers(root) {
+        var wrappers = root.querySelectorAll('div, p, span, center');
+        // deepest-first ordering
+        var arr = [];
+        for (var i = 0; i < wrappers.length; i++) arr.push(wrappers[i]);
+        arr.sort(function(a, b) {
+            // depth difference: deeper first
+            var da = 0, db = 0, x = a;
+            while (x) { da++; x = x.parentNode; }
+            x = b;
+            while (x) { db++; x = x.parentNode; }
+            return db - da;
+        });
+        for (var w = 0; w < arr.length; w++) {
+            var wrapNode = arr[w];
+            if (!wrapNode.parentNode) continue;
+            if (wrapNode.closest('.gallery-item, .tr-caption-container, .auto-gallery, .post-nav, header, footer, nav')) continue;
+            if (wrapNode === root) continue;
+            var anchorCount = 0;
+            var hasOther = false;
+            var ch = wrapNode.childNodes;
+            for (var ci = 0; ci < ch.length; ci++) {
+                var n = ch[ci];
+                if (n.nodeType === 3) {
+                    if (n.textContent.replace(/\s+/g, '')) { hasOther = true; break; }
+                } else if (n.nodeType === 1) {
+                    if (n.tagName === 'A' && isImageLink(n)) {
+                        anchorCount++;
+                    } else if (n.tagName === 'BR') {
+                        // ok
+                    } else {
+                        hasOther = true; break;
+                    }
+                }
+            }
+            if (!hasOther && anchorCount >= 1) {
+                // Move all children up to parent in order, then drop wrapper
+                while (wrapNode.firstChild) {
+                    wrapNode.parentNode.insertBefore(wrapNode.firstChild, wrapNode);
+                }
+                wrapNode.parentNode.removeChild(wrapNode);
+            }
+        }
+    }
+    var contentRoots = document.querySelectorAll('.page-content');
+    for (var cr = 0; cr < contentRoots.length; cr++) {
+        unwrapImageOnlyContainers(contentRoots[cr]);
+    }
+    // Any "tile-shaped" node that should pack into a flex row of equal-size tiles
+    function isTileUnit(node) {
+        if (!node || node.nodeType !== 1) return false;
+        if (node.closest('.auto-gallery')) return false;
+        var tag = node.tagName;
+        if (tag === 'A') return isImageLink(node);
+        if (tag === 'DL' && node.classList && node.classList.contains('gallery-item')) {
+            return !!node.querySelector('img');
+        }
+        if (tag === 'DT' && node.classList && node.classList.contains('gallery-icon')) {
+            if (!node.querySelector('img')) return false;
+            // only orphan dt (not inside a dl.gallery-item) is its own tile
+            if (node.parentNode && node.parentNode.closest &&
+                node.parentNode.closest('dl.gallery-item')) return false;
+            return true;
+        }
+        if (tag === 'TABLE' && node.classList && node.classList.contains('tr-caption-container')) {
+            return !!node.querySelector('img');
+        }
+        return false;
+    }
+    function isFillerNode(node) {
+        if (node.nodeType === 3) return !node.textContent.replace(/\s+/g, '');
+        if (node.nodeType !== 1) return true;
+        var tag = node.tagName;
+        if (tag === 'BR') return true;
+        if ((tag === 'P' || tag === 'DIV' || tag === 'SPAN') &&
+            !node.textContent.replace(/\s+/g, '') &&
+            !node.querySelector('img')) return true;
+        // empty / image-less gallery placeholders that we already mark hidden
+        if (tag === 'DL' && node.classList && node.classList.contains('gallery-item') &&
+            !node.querySelector('img')) return true;
+        if (tag === 'DT' && node.classList && node.classList.contains('gallery-icon') &&
+            !node.querySelector('img')) return true;
+        return false;
+    }
+    var contents = document.querySelectorAll('.page-content');
+    for (var c = 0; c < contents.length; c++) {
+        var parents = contents[c].querySelectorAll('*');
+        var allParents = [contents[c]];
+        for (var pp = 0; pp < parents.length; pp++) allParents.push(parents[pp]);
+
+        for (var p = 0; p < allParents.length; p++) {
+            var parent = allParents[p];
+            if (parent.classList && parent.classList.contains('auto-gallery')) continue;
+
+            var kids = parent.childNodes;
+            var run = [];
+            var runs = [];
+            for (var k = 0; k < kids.length; k++) {
+                var node = kids[k];
+                if (isTileUnit(node)) {
+                    run.push(node);
+                } else if (run.length > 0 && isFillerNode(node)) {
+                    // allow whitespace / <br> / empty <p> / empty gallery placeholders
+                    continue;
+                } else {
+                    if (run.length >= 2) runs.push(run);
+                    run = [];
+                }
+            }
+            if (run.length >= 2) runs.push(run);
+
+            for (var r = 0; r < runs.length; r++) {
+                var group = runs[r];
+                var wrap = document.createElement('div');
+                wrap.className = 'auto-gallery';
+                group[0].parentNode.insertBefore(wrap, group[0]);
+                for (var g = 0; g < group.length; g++) {
+                    wrap.appendChild(group[g]);
+                }
+            }
+        }
     }
 })();
 
