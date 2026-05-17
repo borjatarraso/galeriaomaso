@@ -220,6 +220,16 @@ externos.
 | **Twitter Card** | Bloque `<!-- gal-seo -->` | Equivalente a Open Graph para X/Twitter; tipo `summary_large_image`. |
 | **JSON-LD (Schema.org)** | `<script type="application/ld+json">` | Marcado estructurado. La home declara `ArtGallery` + `WebSite` con dirección postal completa. Los posts usan `Article`. Las secciones usan `CollectionPage`. Habilita los *rich results* (nombre, dirección, horario) en Google. |
 | **`<meta name="robots">`** | Todos los `.html` | Permite previsualizaciones grandes de las imágenes en los resultados de búsqueda (`max-image-preview:large`). |
+| **`ExhibitionEvent` (Schema.org)** | Posts donde se detecta "del X de mes al Y de mes de YYYY" | Activa los *rich results* de eventos en Google: nombre, fecha de inicio/fin, lugar (dirección de la galería) y organizador. Solo se añade cuando el rango es detectable. |
+| **`BreadcrumbList` (Schema.org)** | Cada post | Pinta la miga **Inicio › Exposiciones › Título** debajo del título en los resultados de Google, sustituyendo la URL cruda. |
+| **`datePublished` por post** | JSON-LD `Article` de cada post | Se extrae del `<p class="post-date">` (`miércoles, 6 de abril de 2022` → `2022-04-06`) para que Google sepa cuándo se publicó la exposición. |
+| **Lazy-loading de imágenes** | Todos los `<img>` salvo el logo | `loading="lazy"` + `decoding="async"` — el navegador descarga las imágenes off-screen sólo cuando hacen falta. Mejora LCP/CLS, métricas que Google usa para rankear. |
+| **Logo eager + `fetchpriority="high"`** | Logo de cabecera únicamente | Garantiza que el LCP (el logo) cargue primero. |
+| **`preconnect` / `dns-prefetch`** | Bloque `<!-- gal-perf -->` en `<head>` | Adelanta el handshake TLS con Google Fonts, Google Translate y Cloudflare Analytics. Recorta 100–200 ms del LCP en visitas frías. |
+| **`/feed.xml` (RSS 2.0)** | `public/feed.xml`, 50 posts más recientes | Permite que lectores de feeds (Feedly, NewsBlur) descubran las nuevas exposiciones automáticamente. Algunos agregadores sólo indexan sitios con RSS. |
+| **`/llms.txt`** | `public/llms.txt` | Convención LLMS.txt de Anthropic — un mapa curado del sitio para que ChatGPT, Claude, Perplexity y Gemini citen la galería con datos correctos. |
+| **Bloque "Exposiciones relacionadas"** | Bajo cada post, antes del `.post-nav` | 3-4 posts cronológicamente próximos. Reparte PageRank por todo el archivo y reduce la tasa de rebote (mejor ranking). |
+| **Sufijo de SEO local** | `… | Galería O+O · Valencia` en cada post | Añade el nombre de la ciudad a cada título para capturar long-tail como "exposición [artista] Valencia". |
 
 ### Optimizaciones del lado Cloudflare
 
@@ -235,14 +245,19 @@ Los dos scripts son Python puro (sin dependencias) y son **idempotentes**: se
 pueden re-ejecutar tantas veces como haga falta sin duplicar nada.
 
 ```bash
-# Después de editar/añadir contenido, regenera los metadatos por página:
+# 1) Metadatos por página (title, description, OG, Twitter, JSON-LD,
+#    Event + Breadcrumb cuando aplican, beacon de CF Analytics):
 python3 scripts/seo-transform.py
 
-# Y regenera sitemap.xml + robots.txt + _headers:
+# 2) Ficheros del sitio: sitemap.xml, robots.txt, _headers, feed.xml, llms.txt
 python3 scripts/seo-files.py
+
+# 3) Mejoras de rendimiento + crawl interno: lazy/eager en imágenes,
+#    preconnect/preload en <head>, bloque "Exposiciones relacionadas":
+python3 scripts/seo-plus.py
 ```
 
-Ambos scripts operan primero sobre `public/` y luego replican a la raíz del
+Los tres scripts operan primero sobre `public/` y luego replican a la raíz del
 repo para mantener los dos árboles sincronizados (ver §2 sobre el espejo
 `public/`).
 

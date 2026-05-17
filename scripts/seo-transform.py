@@ -17,12 +17,16 @@ ORG_DESC = ('Galería O+O — Centro de referencia internacional de arte entre O
             'Gestión Cultural en Valencia, España.')
 ORG_ADDR = {
     '@type': 'PostalAddress',
-    'streetAddress': 'C/ del Mar, 24',
+    'streetAddress': 'C/ Francisco Martínez nº 34-36 bajo',
     'addressLocality': 'Valencia',
-    'postalCode': '46003',
+    'postalCode': '46020',
     'addressCountry': 'ES',
 }
 DEFAULT_IMG = SITE + '/images/portada_letras.png'
+
+# Post title suffix — includes "Valencia" for local-SEO long-tail.
+POST_SUFFIX = ' | Galería O+O · Valencia'
+SECTION_SUFFIX = ' | Galería O+O'
 
 MARK_START = '<!-- gal-seo:start -->'
 MARK_END = '<!-- gal-seo:end -->'
@@ -74,6 +78,50 @@ WEEKDAY_DATE_RE = re.compile(
     re.IGNORECASE,
 )
 ADDR_RE = re.compile(r'C/\s*Francisco\s*Mart[ií]nez', re.IGNORECASE)
+
+# Spanish months → ISO month
+ES_MONTHS = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
+    'julio': 7, 'agosto': 8, 'septiembre': 9, 'setiembre': 9, 'octubre': 10,
+    'noviembre': 11, 'diciembre': 12,
+}
+# "23 de julio de 2011" — single date (e.g. post-date line)
+SINGLE_DATE_RE = re.compile(
+    r'(\d{1,2})\s+de\s+(' + '|'.join(ES_MONTHS) + r')\s+de\s+(\d{4})',
+    re.IGNORECASE,
+)
+# "del 2 de abril al 2 de mayo de 2022"  (start month optional year)
+RANGE_DATE_RE = re.compile(
+    r'del\s+(\d{1,2})\s+de\s+(' + '|'.join(ES_MONTHS) + r')'
+    r'(?:\s+de\s+(\d{4}))?'
+    r'\s+al\s+(\d{1,2})\s+de\s+(' + '|'.join(ES_MONTHS) + r')'
+    r'\s+de\s+(\d{4})',
+    re.IGNORECASE,
+)
+
+
+def _iso(y, m, d):
+    return f'{int(y):04d}-{int(m):02d}-{int(d):02d}'
+
+
+def parse_post_dates(body_text):
+    """Return (start_iso, end_iso, published_iso) from cleaned body text.
+
+    start/end set only when a 'del … al …' range is present (event window).
+    published falls back to the first single date found (post-date line).
+    """
+    start = end = published = None
+    m = RANGE_DATE_RE.search(body_text)
+    if m:
+        d1, mo1, y1, d2, mo2, y2 = m.groups()
+        y1 = y1 or y2
+        start = _iso(y1, ES_MONTHS[mo1.lower()], d1)
+        end = _iso(y2, ES_MONTHS[mo2.lower()], d2)
+    m2 = SINGLE_DATE_RE.search(body_text)
+    if m2:
+        d, mo, y = m2.groups()
+        published = _iso(y, ES_MONTHS[mo.lower()], d)
+    return start, end, published
 
 
 def extract_description(body, title, fallback):
@@ -162,7 +210,8 @@ def build_seo_block(*, title, description, canonical, image, is_post, page_path)
     return '\n    '.join(lines)
 
 
-def build_jsonld(*, is_home, is_post, title, description, canonical, image, page_path):
+def build_jsonld(*, is_home, is_post, title, description, canonical, image, page_path,
+                  event_start=None, event_end=None, published=None):
     if is_home:
         data = {
             '@context': 'https://schema.org',
@@ -191,8 +240,7 @@ def build_jsonld(*, is_home, is_post, title, description, canonical, image, page
             ],
         }
     elif is_post:
-        data = {
-            '@context': 'https://schema.org',
+        article = {
             '@type': 'Article',
             'headline': title,
             'description': description,
@@ -200,12 +248,44 @@ def build_jsonld(*, is_home, is_post, title, description, canonical, image, page
             'url': canonical,
             'inLanguage': 'es-ES',
             'isPartOf': {'@id': SITE + '/#website'},
-            'publisher': {
-                '@type': 'Organization',
-                'name': 'Galería O+O',
-                'logo': {'@type': 'ImageObject', 'url': DEFAULT_IMG},
-            },
+            'publisher': {'@id': SITE + '/#gallery'},
+            'mainEntityOfPage': canonical,
         }
+        if published:
+            article['datePublished'] = published
+            article['dateModified'] = published
+        breadcrumb = {
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {'@type': 'ListItem', 'position': 1, 'name': 'Inicio', 'item': SITE + '/'},
+                {'@type': 'ListItem', 'position': 2, 'name': 'Exposiciones',
+                 'item': SITE + '/exposiciones'},
+                {'@type': 'ListItem', 'position': 3, 'name': title, 'item': canonical},
+            ],
+        }
+        graph = [article, breadcrumb,
+                 {'@type': 'ArtGallery', '@id': SITE + '/#gallery',
+                  'name': 'Galería O+O', 'url': SITE + '/',
+                  'address': ORG_ADDR, 'logo': DEFAULT_IMG}]
+        if event_start and event_end:
+            graph.append({
+                '@type': 'ExhibitionEvent',
+                'name': title,
+                'description': description,
+                'startDate': event_start,
+                'endDate': event_end,
+                'eventStatus': 'https://schema.org/EventScheduled',
+                'eventAttendanceMode': 'https://schema.org/OfflineEventAttendanceMode',
+                'location': {
+                    '@type': 'Place',
+                    'name': 'Galería O+O',
+                    'address': ORG_ADDR,
+                },
+                'image': image,
+                'url': canonical,
+                'organizer': {'@id': SITE + '/#gallery'},
+            })
+        data = {'@context': 'https://schema.org', '@graph': graph}
     else:
         # Section pages (exposiciones, artistas, etc.)
         data = {
@@ -287,12 +367,13 @@ def transform_file(path: Path, rel: str):
     if is_home:
         page_title = 'Galería O+O — Arte entre Oriente y Occidente | Valencia'
     elif is_post:
-        page_title = extract_title(body_slice, fallback='Galería O+O')
-        page_title = f'{page_title} | Galería O+O'
+        bare_title = extract_title(body_slice, fallback='Galería O+O')
+        page_title = f'{bare_title}{POST_SUFFIX}'
     else:
-        # Section page: use existing title if descriptive, else extract from H2
+        # Section page: use existing title if descriptive, else extract from H2.
+        # Drop legacy '| Galería O+O' to avoid stacking on re-runs.
         if needs_new:
-            page_title = extract_title(body_slice, fallback=rel[:-5].title()) + ' | Galería O+O'
+            page_title = extract_title(body_slice, fallback=rel[:-5].title()) + SECTION_SUFFIX
         else:
             page_title = existing_title
 
@@ -301,14 +382,24 @@ def transform_file(path: Path, rel: str):
         description = ORG_DESC
     else:
         # Pass the extracted title so we can strip it if it leads the body.
-        bare_title = page_title.replace(' | Galería O+O', '') if is_post else page_title
-        description = extract_description(body_slice, bare_title, fallback=ORG_DESC)
+        if is_post:
+            bare_title_for_desc = page_title.replace(POST_SUFFIX, '')
+        else:
+            bare_title_for_desc = page_title
+        description = extract_description(body_slice, bare_title_for_desc, fallback=ORG_DESC)
 
     canonical = canonical_for(rel)
     image = find_image(body_slice, is_post)
 
+    # Parse exhibition window + published date from the body (posts only).
+    event_start = event_end = published = None
+    if is_post:
+        cleaned = clean_text(body_slice)
+        event_start, event_end, published = parse_post_dates(cleaned)
+
+    bare_for_meta = page_title.replace(POST_SUFFIX, '') if is_post else page_title
     seo_block = build_seo_block(
-        title=page_title.replace(' | Galería O+O', '') if is_post else page_title,
+        title=bare_for_meta,
         description=description,
         canonical=canonical,
         image=image,
@@ -317,8 +408,9 @@ def transform_file(path: Path, rel: str):
     )
     jsonld = build_jsonld(
         is_home=is_home, is_post=is_post,
-        title=page_title, description=description, canonical=canonical,
+        title=bare_for_meta, description=description, canonical=canonical,
         image=image, page_path=rel,
+        event_start=event_start, event_end=event_end, published=published,
     )
 
     # 1) Replace <title>

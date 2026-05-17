@@ -1,0 +1,26 @@
+# Galería O+O 东西方画廊
+
+> Centro de referencia internacional de arte entre Oriente y Occidente. Galería de arte contemporáneo en Valencia (España), dedicada al intercambio cultural Spain–China desde 2007. Dirigida por Enriqueta Hueso.
+
+## About
+- Name: Galería O+O / 东西方画廊
+- Founded: 2007
+- Director: Enriqueta Hueso
+- Location: C/ Francisco Martínez nº 34-36 bajo, 46020 Valencia, Spain
+- Phone: +34 639 99 03 92
+- Email: enriqueta.hueso@gmail.com
+
+## Sections
+- [Exposiciones](https://galeriaomaso.com/exposiciones): Exhibition archive (300+ shows since 2007)
+- [Artistas](https://galeriaomaso.com/artistas): Roster of represented artists
+- [Artículos](https://galeriaomaso.com/articulos): Articles and essays
+- [Internacional](https://galeriaomaso.com/internacional): International projects (China + others)
+- [Ferias](https://galeriaomaso.com/ferias): Art fairs
+- [Cursos](https://galeriaomaso.com/cursos): Workshops and courses
+- [Noticias](https://galeriaomaso.com/noticias): News
+- [Contacto](https://galeriaomaso.com/contacta): Contact
+- [Cómo llegar](https://galeriaomaso.com/como-llegar): How to reach the gallery
+
+## Resources
+- Sitemap: https://galeriaomaso.com/sitemap.xml
+- RSS feed: https://galeriaomaso.com/feed.xml

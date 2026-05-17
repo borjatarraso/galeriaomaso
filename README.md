@@ -216,6 +216,17 @@ service.
 | **JSON-LD structured data** | Every `.html` (`<script type="application/ld+json">`) | Schema.org markup. Home uses `ArtGallery` + `WebSite` with full postal address. Posts use `Article`. Section pages use `CollectionPage`. Enables rich results (gallery name, address, hours) in Google. |
 | **`<meta name="robots" content="index,follow,max-image-preview:large">`** | Every `.html` | Allows large image previews in Google results (instead of the default thumbnail). |
 | **`hreflang` / language alternates** | Handled in-page | All 8 languages translate at the same URL via the client-side switcher + Google Translate widget; no separate URL tree to declare. |
+| **`ExhibitionEvent` JSON-LD** | Posts where a "del X de mes al Y de mes de YYYY" range is detected | Surfaces exhibitions in Google's event-rich results: name, start/end date, location (gallery address), organizer. Falls back gracefully when no date range is present. |
+| **`BreadcrumbList` JSON-LD** | Every post | Renders the **Inicio › Exposiciones › Title** breadcrumb directly in the SERP, replacing the raw URL line. |
+| **Per-post `datePublished`** | Article JSON-LD on every post | Parsed from the `<p class="post-date">` line so Google knows when each exhibition was published. |
+| **Image perf (`loading=lazy` + `decoding=async`)** | Every `<img>` outside the header logo | Browser defers off-screen images, freeing the main thread for above-the-fold paint. Improves Core Web Vitals (LCP/CLS), which are direct ranking signals. |
+| **`loading=eager` + `fetchpriority=high`** | Header logo only | Forces the LCP candidate to load first. |
+| **`<link rel="preconnect">` + `dns-prefetch`** | `<!-- gal-perf -->` block in `<head>` | Warms up TLS to Google Fonts / GTranslate / Cloudflare Analytics before the browser needs them. Shaves 100–200ms off LCP on cold visits. |
+| **`<link rel="alternate" type="application/rss+xml">`** | Same `gal-perf` block | Lets feed readers discover `/feed.xml` automatically. |
+| **`/feed.xml` (RSS 2.0)** | `public/feed.xml`, 50 latest posts | Powers feed-reader discovery; some news aggregators (Feedly, NewsBlur) only ingest sites with a valid RSS feed. |
+| **`/llms.txt`** | `public/llms.txt` | Per the Anthropic LLMS.txt convention — gives ChatGPT, Claude, Perplexity, Gemini a curated map of the site so AI assistants cite the gallery accurately. |
+| **Related-exhibitions block** | Bottom of every post, before `.post-nav` | 3–4 chronologically-nearest sibling posts. Distributes PageRank deeper into the archive and keeps visitors on-site (lower bounce → better ranking). |
+| **Local-SEO title suffix** | `… | Galería O+O · Valencia` on every post | Adds the city name to every title for long-tail queries like "exposición [artist] Valencia". |
 
 ### Cloudflare-side optimizations
 
@@ -246,12 +257,14 @@ and rewrites the `<head>` and a small `</body>` snippet:
 To re-run after content changes:
 
 ```bash
-python3 scripts/seo-transform.py   # rewrites per-page metadata
-python3 scripts/seo-files.py       # regenerates sitemap.xml, robots.txt, _headers
+python3 scripts/seo-transform.py   # per-page metadata + JSON-LD (incl. Event + Breadcrumb)
+python3 scripts/seo-files.py       # sitemap.xml, robots.txt, _headers, feed.xml, llms.txt
+python3 scripts/seo-plus.py        # image lazy/eager, preconnect/preload, related-posts block
 ```
 
-> The two scripts are pure Python (no deps) and operate on `public/` first,
-> then mirror to the repo root so both trees stay in sync.
+> The three scripts are pure Python (no deps), idempotent (everything is
+> wrapped in `<!-- gal-* -->` markers), and operate on `public/` first then
+> mirror to the repo root so both trees stay in sync.
 
 ---
 

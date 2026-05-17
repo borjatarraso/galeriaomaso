@@ -22,5 +22,11 @@
 /robots.txt
   Cache-Control: public, max-age=86400
 
+/feed.xml
+  Cache-Control: public, max-age=3600
+
+/llms.txt
+  Cache-Control: public, max-age=86400
+
 /*.html
   Cache-Control: public, max-age=300, s-maxage=3600
