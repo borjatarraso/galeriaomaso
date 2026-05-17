@@ -234,7 +234,8 @@ service.
 |---------|-------|--------|
 | **`_headers` file** | `public/_headers` | Sets long `Cache-Control: max-age=31536000, immutable` on `/images/*`, 1-day TTL on CSS/JS, 5-min `max-age` + 1-hr `s-maxage` on HTML. Repeat visits load instantly; edits still ship fast because the edge revalidates HTML every hour. |
 | **Security headers** | `public/_headers` | `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: interest-cohort=()` — all served from the edge with no Worker code. |
-| **Web Analytics beacon** | `<!-- gal-cf-beacon -->` block before `</body>` in every page | Privacy-friendly visitor analytics (no cookies, no PII). The beacon ships with an empty `data-cf-beacon` token; enable by pasting your site token from **Cloudflare → Analytics & Logs → Web Analytics**. |
+| **Web Analytics (Automatic Setup)** | Cloudflare dashboard → *Analytics & Logs → Web Analytics* | Because `galeriaomaso.com` is **proxied** through Cloudflare (orange-cloud DNS), pageviews are collected automatically by the edge — no JS beacon token to paste, no per-visitor cookie. The dashboard at *Web Analytics* **is** the report. |
+| **Beacon snippet (no-op stub)** | `<!-- gal-cf-beacon -->` block before `</body>` | The empty `data-cf-beacon='{"token": ""}'` stub is a deliberate no-op kept in place in case the site ever moves to grey-cloud DNS (proxy off) — at which point setting `CF_ANALYTICS_TOKEN` in `scripts/seo-transform.py` and re-running activates Standalone Analytics. For the current proxied setup, **leave the token empty.** |
 | **HTTP/3, Brotli, 0-RTT** | Cloudflare defaults | All on for proxied domains; nothing to configure. |
 | **Bot Fight Mode** | Cloudflare dashboard | Recommended — keeps the Analytics beacon clean of crawler noise. |
 

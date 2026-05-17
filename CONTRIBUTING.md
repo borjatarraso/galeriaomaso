@@ -237,7 +237,8 @@ externos.
 |--------|-------|--------|
 | **`_headers`** | `public/_headers` | TTL largo (`max-age=31536000, immutable`) en `/images/*`, 1 día para CSS/JS, 5 min + 1 h en el edge para HTML. Las visitas repetidas cargan al instante y los cambios siguen apareciendo rápido. |
 | **Cabeceras de seguridad** | `public/_headers` | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Permissions-Policy` se sirven desde el edge sin código de Worker. |
-| **Cloudflare Web Analytics** | Beacon en cada página, antes de `</body>` | Métricas de visitantes sin cookies ni datos personales. El beacon va con `data-cf-beacon` vacío; se activa pegando el token desde **Cloudflare → Analytics & Logs → Web Analytics**. |
+| **Web Analytics (modo Automático)** | Panel de Cloudflare → *Analytics & Logs → Web Analytics* | Como `galeriaomaso.com` está **proxyado** por Cloudflare (DNS naranja), las visitas se contabilizan automáticamente en el edge — sin token de JS, sin cookies. El propio panel de *Web Analytics* es ya el dashboard. **No hay token que pegar.** |
+| **Stub del beacon (no-op)** | Bloque `<!-- gal-cf-beacon -->` antes de `</body>` | El `data-cf-beacon='{"token": ""}'` vacío es un no-op intencional. Se mantiene por si algún día se cambia a DNS gris (proxy desactivado): bastaría con poner `CF_ANALYTICS_TOKEN` en `scripts/seo-transform.py` y re-ejecutarlo para activar el modo Standalone. Mientras el dominio esté proxyado, **dejar el token vacío**. |
 
 ### Cómo se regenera todo
 
