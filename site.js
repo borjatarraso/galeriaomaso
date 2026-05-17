@@ -14,26 +14,56 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
     // 'es' is the source language; selecting it means "no translation".
     var GT_MAP = { es: '', en: 'en', de: 'de', fr: 'fr', it: 'it', zh: 'zh-CN', ja: 'ja', fa: 'fa' };
 
-    function setCookie(name, value, days) {
-        var d = new Date();
-        d.setTime(d.getTime() + (days || 365) * 86400000);
-        var base = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/';
-        document.cookie = base;
+    // Build every domain variant the GT cookie might live under so we can
+    // reliably wipe it on a switch back to Spanish. GT and our own setter
+    // have both used the bare hostname and the dotted root over time.
+    function cookieDomainVariants() {
         var host = location.hostname;
-        var parts = host.split('.');
-        if (parts.length >= 2 && host !== 'localhost') {
-            var root = '.' + parts.slice(-2).join('.');
-            document.cookie = base + ';domain=' + root;
+        var out = ['']; // no domain attribute (host-only cookie)
+        if (host && host !== 'localhost' && !/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+            out.push(host);
+            out.push('.' + host);
+            var bare = host.replace(/^www\./, '');
+            if (bare !== host) { out.push(bare); out.push('.' + bare); }
+            var parts = host.split('.');
+            if (parts.length >= 2) {
+                var root = parts.slice(-2).join('.');
+                out.push(root); out.push('.' + root);
+            }
+        }
+        return out;
+    }
+    function setGoogtrans(value) {
+        var d = new Date(); d.setTime(d.getTime() + 365 * 86400000);
+        var expires = d.toUTCString();
+        var variants = cookieDomainVariants();
+        for (var i = 0; i < variants.length; i++) {
+            var dom = variants[i] ? ';domain=' + variants[i] : '';
+            document.cookie = 'googtrans=' + value + ';expires=' + expires + ';path=/' + dom;
         }
     }
-    function clearCookie(name) {
-        var expired = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-        document.cookie = expired;
-        var host = location.hostname;
-        var parts = host.split('.');
-        if (parts.length >= 2 && host !== 'localhost') {
-            var root = '.' + parts.slice(-2).join('.');
-            document.cookie = expired + ';domain=' + root;
+    function clearGoogtrans() {
+        var past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+        var variants = cookieDomainVariants();
+        var paths = ['/', location.pathname, location.pathname.replace(/[^/]+$/, '')];
+        for (var i = 0; i < variants.length; i++) {
+            var dom = variants[i] ? ';domain=' + variants[i] : '';
+            for (var j = 0; j < paths.length; j++) {
+                if (!paths[j]) continue;
+                document.cookie = 'googtrans=;expires=' + past + ';path=' + paths[j] + dom;
+            }
+        }
+    }
+    // Drop any "#googtrans(es|xx)" hash that GT may have left in the URL —
+    // if it survives a reload, GT will re-read it and re-translate.
+    function stripGoogtransHash() {
+        if (location.hash && location.hash.indexOf('#googtrans') === 0) {
+            var clean = location.pathname + location.search;
+            if (history && history.replaceState) {
+                history.replaceState(null, '', clean);
+            } else {
+                location.hash = '';
+            }
         }
     }
 
@@ -57,18 +87,22 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
         document.head.appendChild(s);
     }
 
-    // Public hook used by the language switcher.
-    // Sets the googtrans cookie and reloads so GT picks up the new target.
+    // Public hook used by the language switcher. Sets/clears the googtrans
+    // cookie, scrubs any #googtrans hash, then loads a clean URL.
     window._galApplyGoogleTrans = function(lang) {
         var gLang = GT_MAP[lang];
         if (gLang === undefined) return;
-        if (gLang === '') {
-            clearCookie('googtrans');
-        } else {
-            setCookie('googtrans', '/es/' + gLang, 365);
-        }
-        location.reload();
+        clearGoogtrans(); // always wipe first to drop stale variants
+        if (gLang !== '') setGoogtrans('/es/' + gLang);
+        var clean = location.pathname + location.search;
+        // replace() (not reload) avoids back-button to the polluted URL
+        // and forces a fresh document without any GT-injected DOM state.
+        location.replace(clean);
     };
+
+    // On every page load: if a stale #googtrans hash sneaked in, strip it
+    // before GT initializes so the cookie is the only source of truth.
+    stripGoogtransHash();
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', inject);
