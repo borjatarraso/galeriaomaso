@@ -1521,3 +1521,19 @@ nav { display: flex; align-items: center; }
 }
 
 a:focus:not(:focus-visible) { outline: none; }
+
+/* ============================================================
+   Google Translate widget — hide UI, keep layout intact
+   ============================================================ */
+#google_translate_element { display: none !important; }
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover { display: none !important; }
+body { top: 0 !important; position: static !important; }
+.skiptranslate iframe { display: none !important; }
+/* Strip GT's yellow highlight on translated nodes */
+font[style*="background-color"] { background-color: transparent !important; }
+.goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }

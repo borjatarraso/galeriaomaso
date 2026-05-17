@@ -6,6 +6,78 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
 });
 
 // ============================================================
+// Google Translate (full-page MT for body content)
+// Our own data-g18n map handles nav/toolbar; GT handles everything else.
+// ============================================================
+(function() {
+    // Map our internal lang codes -> Google Translate codes.
+    // 'es' is the source language; selecting it means "no translation".
+    var GT_MAP = { es: '', en: 'en', de: 'de', fr: 'fr', it: 'it', zh: 'zh-CN', ja: 'ja', fa: 'fa' };
+
+    function setCookie(name, value, days) {
+        var d = new Date();
+        d.setTime(d.getTime() + (days || 365) * 86400000);
+        var base = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/';
+        document.cookie = base;
+        var host = location.hostname;
+        var parts = host.split('.');
+        if (parts.length >= 2 && host !== 'localhost') {
+            var root = '.' + parts.slice(-2).join('.');
+            document.cookie = base + ';domain=' + root;
+        }
+    }
+    function clearCookie(name) {
+        var expired = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        document.cookie = expired;
+        var host = location.hostname;
+        var parts = host.split('.');
+        if (parts.length >= 2 && host !== 'localhost') {
+            var root = '.' + parts.slice(-2).join('.');
+            document.cookie = expired + ';domain=' + root;
+        }
+    }
+
+    window.googleTranslateElementInit = function() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'es',
+            includedLanguages: 'en,de,fr,it,zh-CN,ja,fa',
+            autoDisplay: false,
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
+    };
+
+    function inject() {
+        if (document.getElementById('google_translate_element')) return;
+        var div = document.createElement('div');
+        div.id = 'google_translate_element';
+        document.body.appendChild(div);
+        var s = document.createElement('script');
+        s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+        s.async = true;
+        document.head.appendChild(s);
+    }
+
+    // Public hook used by the language switcher.
+    // Sets the googtrans cookie and reloads so GT picks up the new target.
+    window._galApplyGoogleTrans = function(lang) {
+        var gLang = GT_MAP[lang];
+        if (gLang === undefined) return;
+        if (gLang === '') {
+            clearCookie('googtrans');
+        } else {
+            setCookie('googtrans', '/es/' + gLang, 365);
+        }
+        location.reload();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inject);
+    } else {
+        inject();
+    }
+})();
+
+// ============================================================
 // Language Selector
 // ============================================================
 (function() {
@@ -50,8 +122,10 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
         });
     }
 
-    function switchLang(lang) {
+    function switchLang(lang, opts) {
         if (!galTranslations || !galTranslations[lang]) return;
+        var isInitial = opts && opts.initial;
+        var prev = currentLang;
         currentLang = lang;
 
         // Update active
@@ -72,7 +146,7 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
         document.documentElement.lang = lang;
         document.documentElement.dir = rtlLangs.indexOf(lang) !== -1 ? 'rtl' : 'ltr';
 
-        // Translate all data-g18n elements
+        // Translate all data-g18n elements (nav, toolbar, etc.)
         var els = document.querySelectorAll('[data-g18n]');
         for (var e = 0; e < els.length; e++) {
             var key = els[e].getAttribute('data-g18n');
@@ -83,6 +157,21 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
 
         // Update view label
         updateViewLabel();
+
+        // Persist choice across pages
+        try { localStorage.setItem('galLang', lang); } catch (_) {}
+
+        // Drive Google Translate for the rest of the page (titles, body, posts)
+        if (!isInitial && prev !== lang && typeof window._galApplyGoogleTrans === 'function') {
+            window._galApplyGoogleTrans(lang);
+        }
+    }
+
+    // Restore previously chosen language on page load
+    var saved = null;
+    try { saved = localStorage.getItem('galLang'); } catch (_) {}
+    if (saved && saved !== 'es' && galTranslations[saved]) {
+        switchLang(saved, { initial: true });
     }
 
     // Expose for view mode
