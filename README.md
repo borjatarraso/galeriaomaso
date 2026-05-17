@@ -202,6 +202,20 @@ machine-readable structured data, and social-share tags. Search engines and
 social platforms can index and render the site cleanly without any external
 service.
 
+### Visibility pipeline at a glance
+
+![SEO visibility pipeline — 5 stages from content to audience](docs/seo_visibility_pipeline.jpg)
+
+> Full resolution: [`docs/seo_visibility_pipeline.png`](docs/seo_visibility_pipeline.png) · vector source: [`docs/seo_visibility_pipeline.svg`](docs/seo_visibility_pipeline.svg)
+
+The diagram reads left → right in five stages:
+
+1. **Content** — 313 posts + 11 section pages + image assets, all static HTML.
+2. **Build** — three idempotent Python scripts under `scripts/` enrich every page (see "How the per-page metadata is generated" below).
+3. **Static output** — 324 enriched HTML pages plus the supporting files (`sitemap.xml`, `robots.txt`, `_headers`, `feed.xml`, `llms.txt`).
+4. **Channels** — Cloudflare edge serves to: Google Search Console (verified, sitemap submitted), Bing Webmaster (imported from GSC), social platforms (rich cards via OG/Twitter), RSS readers (Feedly/NewsBlur), and AI assistants (Claude/ChatGPT/Perplexity via `llms.txt`).
+5. **Audience** — visitors arrive via SERP rich results, social shares, RSS, or AI citations; their visits are counted by Cloudflare Web Analytics in automatic mode (proxied domain = no JS beacon token needed).
+
 ### What's implemented
 
 | Technique | Where it lives | What it does |
@@ -266,6 +280,64 @@ python3 scripts/seo-plus.py        # image lazy/eager, preconnect/preload, relat
 > The three scripts are pure Python (no deps), idempotent (everything is
 > wrapped in `<!-- gal-* -->` markers), and operate on `public/` first then
 > mirror to the repo root so both trees stay in sync.
+
+### Search-engine submission (one-time)
+
+Search engines won't crawl the site efficiently until the property is
+**verified** and the sitemap is explicitly **submitted**. Done once per
+property, by the owner of the Google/Microsoft account.
+
+**Google Search Console** — done 2026-05-18:
+
+1. https://search.google.com/search-console → *Add property* → URL prefix → `https://galeriaomaso.com`
+2. Choose the **HTML file** verification method → download the
+   `googleXXXXXXXX.html` token Google generates.
+3. Drop the token into the repo at both `public/` and the root mirror,
+   commit, push. Cloudflare deploys it within ~30 s.
+4. Click **Verify** in GSC. (GSC follows the 307 redirect from
+   `/google….html` → `/google…` automatically.)
+5. Left sidebar → **Sitemaps** → submit `sitemap.xml`. Status flips to
+   *Success* within a minute and the 324 URLs are queued for crawl.
+
+**Bing Webmaster Tools** — done 2026-05-18:
+
+1. https://www.bing.com/webmasters → **Import from Google Search Console**
+   → grant Google OAuth → tick `galeriaomaso.com` → **Import**.
+2. Property + sitemap inherit automatically. No second verification file.
+
+After both submissions, crawl is automatic: Google in hours, Bing in
+days to weeks. Watch GSC → **Performance** for first impressions and
+**Pages** for coverage growth.
+
+### What to watch (visibility dashboards)
+
+| Where | Shows |
+|-------|-------|
+| Cloudflare → *Analytics & Logs → Web Analytics* | Pageviews, top pages, country breakdown, referrers. No cookies. Updates near-real-time. |
+| Google Search Console → *Performance* | Impressions, clicks, average position, top queries — segmented by page / country / device. |
+| Google Search Console → *Pages* | Coverage: indexed vs. excluded URLs and *why* each one was excluded. |
+| Google Search Console → *Enhancements* | Rich-result eligibility per schema type (Article, Event, Breadcrumb). |
+| Bing Webmaster Tools → *Search Performance* | Same metrics for Bing/DuckDuckGo/Ecosia (DDG and Ecosia both source from Bing). |
+
+### Visibility checklist for new content
+
+When adding a new post or section page, the three scripts handle the SEO
+plumbing — but the **content** itself needs to give them something to work
+with:
+
+- Open the post with a **descriptive `<h2>`** (this becomes `<title>` +
+  `og:title` + breadcrumb leaf).
+- First paragraph must **summarize the post in 1–2 sentences** (this
+  becomes `<meta description>` + the social-card snippet).
+- Include the exhibition date as **"del N de mes al N de mes de YYYY"**
+  so `seo-transform.py` can emit `ExhibitionEvent` JSON-LD with proper
+  start/end dates. Without that phrase the post still works, just without
+  the event-rich result.
+- Drop the **representative image early** in the body. The first non-logo
+  `<img>` becomes `og:image` (the social-share preview).
+- Always set `alt=""` on `<img>` tags (accessibility + image SEO).
+- After saving, re-run all three scripts in order and push. CF deploys
+  in ~30 s, crawl follows.
 
 ---
 
