@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block Google Translate's machine-translated mirrors from being indexed
+Disallow: /*?_x_tr_sl=
+Disallow: /*?_x_tr_tl=
+Disallow: /*?_x_tr_hl=
+
+Sitemap: https://galeriaomaso.com/sitemap.xml

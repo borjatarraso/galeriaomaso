@@ -1,0 +1,26 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: interest-cohort=()
+
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/favicon.ico
+  Cache-Control: public, max-age=604800
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/*.html
+  Cache-Control: public, max-age=300, s-maxage=3600

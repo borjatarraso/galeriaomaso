@@ -195,6 +195,66 @@ Both PDFs embed the three diagrams above at full resolution.
 
 ---
 
+## SEO & discoverability
+
+The site ships its own SEO layer — every HTML page carries unique metadata,
+machine-readable structured data, and social-share tags. Search engines and
+social platforms can index and render the site cleanly without any external
+service.
+
+### What's implemented
+
+| Technique | Where it lives | What it does |
+|-----------|----------------|--------------|
+| **`robots.txt`** | `public/robots.txt` | Tells crawlers what to index; advertises the sitemap. Blocks Google Translate's machine-translated URL mirrors so duplicates don't compete with the canonical pages. |
+| **`sitemap.xml`** | `public/sitemap.xml` | One entry per page (~324). Generated from the file tree by `scripts/seo-files.py`. Per-section priority/changefreq tuned for crawl budget. |
+| **Per-page `<title>`** | Every `.html` | Extracted from the page's first `<h2>` so each post has a unique, descriptive title — not the generic `Galería O+O 东西方画廊` placeholder Blogger used. |
+| **Per-page `<meta name="description">`** | Every `.html` | First meaningful paragraph of the body (after stripping title + date noise), capped at ~155 chars. Drives the snippet under the title in Google results. |
+| **`<link rel="canonical">`** | Every `.html` | Points to the extension-less URL the Worker actually serves (`/posts/foo`, not `/posts/foo.html`). Collapses the .html-vs-clean-URL duplicate. |
+| **Open Graph** (`og:type`, `og:title`, `og:description`, `og:image`, `og:url`, `og:locale`, `og:site_name`) | Every `.html`, inside the `gal-seo` marker block | Makes shares on WhatsApp / Facebook / LinkedIn render as a rich card with image, title, and description instead of a bare URL. |
+| **Twitter Card** (`twitter:card="summary_large_image"`) | Every `.html` | Same as OG but for X/Twitter; uses the same image and description. |
+| **JSON-LD structured data** | Every `.html` (`<script type="application/ld+json">`) | Schema.org markup. Home uses `ArtGallery` + `WebSite` with full postal address. Posts use `Article`. Section pages use `CollectionPage`. Enables rich results (gallery name, address, hours) in Google. |
+| **`<meta name="robots" content="index,follow,max-image-preview:large">`** | Every `.html` | Allows large image previews in Google results (instead of the default thumbnail). |
+| **`hreflang` / language alternates** | Handled in-page | All 8 languages translate at the same URL via the client-side switcher + Google Translate widget; no separate URL tree to declare. |
+
+### Cloudflare-side optimizations
+
+| Setting | Where | Effect |
+|---------|-------|--------|
+| **`_headers` file** | `public/_headers` | Sets long `Cache-Control: max-age=31536000, immutable` on `/images/*`, 1-day TTL on CSS/JS, 5-min `max-age` + 1-hr `s-maxage` on HTML. Repeat visits load instantly; edits still ship fast because the edge revalidates HTML every hour. |
+| **Security headers** | `public/_headers` | `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: interest-cohort=()` — all served from the edge with no Worker code. |
+| **Web Analytics beacon** | `<!-- gal-cf-beacon -->` block before `</body>` in every page | Privacy-friendly visitor analytics (no cookies, no PII). The beacon ships with an empty `data-cf-beacon` token; enable by pasting your site token from **Cloudflare → Analytics & Logs → Web Analytics**. |
+| **HTTP/3, Brotli, 0-RTT** | Cloudflare defaults | All on for proxied domains; nothing to configure. |
+| **Bot Fight Mode** | Cloudflare dashboard | Recommended — keeps the Analytics beacon clean of crawler noise. |
+
+### How the per-page metadata is generated
+
+`scripts/seo-transform.py` walks every `.html` in `public/` (+ `public/posts/`)
+and rewrites the `<head>` and a small `</body>` snippet:
+
+1. Reads each file, locates `<div class="page-content">` or `<main>` to skip the
+   shared topbar/nav (so the language switcher never leaks into descriptions).
+2. Extracts the **title** from the first significant `<h2>`.
+3. Extracts the **description** from the first body paragraph, stripping the
+   repeated title and the `lunes, 8 de mayo de 2017`-style date prefix.
+4. Finds the first non-logo `<img>` in the post and uses it as `og:image`.
+5. Builds canonical URL, OG, Twitter Card, JSON-LD.
+6. Inserts everything between `<!-- gal-seo:start -->` / `<!-- gal-seo:end -->`
+   markers so the transform is **idempotent** — re-running it replaces the old
+   block instead of duplicating it.
+
+To re-run after content changes:
+
+```bash
+python3 scripts/seo-transform.py   # rewrites per-page metadata
+python3 scripts/seo-files.py       # regenerates sitemap.xml, robots.txt, _headers
+```
+
+> The two scripts are pure Python (no deps) and operate on `public/` first,
+> then mirror to the repo root so both trees stay in sync.
+
+---
+
 ## Layout
 
 ```

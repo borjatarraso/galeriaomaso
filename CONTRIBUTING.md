@@ -200,7 +200,66 @@ git push -u origin mejora/contraste-menu
 
 ---
 
-## 6. Imágenes
+## 6. SEO y visibilidad en buscadores
+
+La web incorpora su propia capa de SEO. Cada página HTML lleva metadatos
+únicos, datos estructurados machine-readable y etiquetas para compartir en
+redes sociales — todo se genera desde el propio repositorio, sin servicios
+externos.
+
+### Qué hay implementado
+
+| Técnica | Dónde vive | Para qué sirve |
+|---------|-----------|----------------|
+| **`robots.txt`** | `public/robots.txt` | Indica a los crawlers qué pueden indexar y publica la URL del sitemap. Bloquea los mirrors traducidos automáticamente por Google Translate para que no compitan con las páginas canónicas. |
+| **`sitemap.xml`** | `public/sitemap.xml` | Una entrada por página (~324 URLs). Lo genera `scripts/seo-files.py` recorriendo el árbol de archivos. Las prioridades y `changefreq` están afinados por sección. |
+| **`<title>` único por página** | Todos los `.html` | Extraído del primer `<h2>` significativo. Sustituye al título genérico (`Galería O+O 东西方画廊`) que dejó Blogger en todas las páginas. |
+| **`<meta name="description">` único** | Todos los `.html` | Primer párrafo real del cuerpo, eliminando el título y la fecha que se repiten arriba. Limitado a ~155 caracteres. Es el snippet que aparece bajo el título en los resultados de Google. |
+| **`<link rel="canonical">`** | Todos los `.html` | Apunta a la URL sin `.html` (la que sirve realmente Cloudflare). Evita que `/posts/foo.html` y `/posts/foo` compitan entre sí en buscadores. |
+| **Open Graph** | Bloque `<!-- gal-seo -->` en todas las páginas | Hace que al compartir un enlace por WhatsApp, Facebook o LinkedIn aparezca una tarjeta con imagen, título y descripción en lugar de una URL pelada. |
+| **Twitter Card** | Bloque `<!-- gal-seo -->` | Equivalente a Open Graph para X/Twitter; tipo `summary_large_image`. |
+| **JSON-LD (Schema.org)** | `<script type="application/ld+json">` | Marcado estructurado. La home declara `ArtGallery` + `WebSite` con dirección postal completa. Los posts usan `Article`. Las secciones usan `CollectionPage`. Habilita los *rich results* (nombre, dirección, horario) en Google. |
+| **`<meta name="robots">`** | Todos los `.html` | Permite previsualizaciones grandes de las imágenes en los resultados de búsqueda (`max-image-preview:large`). |
+
+### Optimizaciones del lado Cloudflare
+
+| Ajuste | Dónde | Efecto |
+|--------|-------|--------|
+| **`_headers`** | `public/_headers` | TTL largo (`max-age=31536000, immutable`) en `/images/*`, 1 día para CSS/JS, 5 min + 1 h en el edge para HTML. Las visitas repetidas cargan al instante y los cambios siguen apareciendo rápido. |
+| **Cabeceras de seguridad** | `public/_headers` | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Permissions-Policy` se sirven desde el edge sin código de Worker. |
+| **Cloudflare Web Analytics** | Beacon en cada página, antes de `</body>` | Métricas de visitantes sin cookies ni datos personales. El beacon va con `data-cf-beacon` vacío; se activa pegando el token desde **Cloudflare → Analytics & Logs → Web Analytics**. |
+
+### Cómo se regenera todo
+
+Los dos scripts son Python puro (sin dependencias) y son **idempotentes**: se
+pueden re-ejecutar tantas veces como haga falta sin duplicar nada.
+
+```bash
+# Después de editar/añadir contenido, regenera los metadatos por página:
+python3 scripts/seo-transform.py
+
+# Y regenera sitemap.xml + robots.txt + _headers:
+python3 scripts/seo-files.py
+```
+
+Ambos scripts operan primero sobre `public/` y luego replican a la raíz del
+repo para mantener los dos árboles sincronizados (ver §2 sobre el espejo
+`public/`).
+
+### Buenas prácticas al añadir contenido nuevo
+
+- **Cada post debe abrir con un `<h2>` descriptivo** con el título real
+  (no "Blog Post 16"). Es lo que se convierte en `<title>` y `og:title`.
+- **El primer párrafo debe resumir el post** en 1-2 frases. Es la
+  descripción que verá Google y la que aparecerá al compartir el enlace.
+- **Pon imágenes representativas al principio** del cuerpo del post. La
+  primera `<img>` que no sea el logo se usa como `og:image` y como imagen
+  de la tarjeta en redes sociales.
+- **Atributo `alt` siempre** (ver §7). Suma puntos de accesibilidad y SEO.
+
+---
+
+## 7. Imágenes
 
 - **Formato:** JPG para fotografías, PNG para logos / iconos / capturas con
   texto, WebP si necesitas mejor compresión.
@@ -216,7 +275,7 @@ git push -u origin mejora/contraste-menu
 
 ---
 
-## 7. ¿Qué pasa cuando se aprueba una PR?
+## 8. ¿Qué pasa cuando se aprueba una PR?
 
 Tras la revisión y la fusión a la rama `main`, el sitio se actualiza
 automáticamente en pocos minutos. No necesitas hacer nada más. Si la
@@ -225,7 +284,7 @@ problema, te lo comunicará en el hilo de la PR.
 
 ---
 
-## 8. Revisión y comunicación
+## 9. Revisión y comunicación
 
 **Borja Tarraso** (`<borja.tarraso@member.fsf.org>`) revisa todas las
 propuestas. Puede:
@@ -240,7 +299,7 @@ un **GitHub Issue** o escribe directamente al email del mantenedor.
 
 ---
 
-## 9. Código de conducta
+## 10. Código de conducta
 
 Trato respetuoso y profesional en todos los hilos del repositorio
 (issues, PR, commits). El mantenedor se reserva el derecho a cerrar
