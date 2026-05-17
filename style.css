@@ -74,12 +74,10 @@ header {
 
 .logo-img {
     display: block;
+    width: 100%;
     max-width: 100%;
-    width: auto;
     height: auto;
-    max-height: 200px;
     margin: 0 auto;
-    object-fit: contain;
 }
 
 /* Legacy text-logo rules kept harmless in case any page still uses them */
@@ -1259,7 +1257,7 @@ img.broken-img {
 @media (max-width: 768px) {
     .logo h1 { font-size: 1.7rem; letter-spacing: 2px; }
     .subtitle { font-size: 0.78rem; }
-    .logo-img { max-height: 130px; }
+    /* image keeps width:100%; aspect ratio scales it naturally */
 
     .menu-toggle { display: block; }
 
@@ -1303,7 +1301,7 @@ img.broken-img {
     .post-grid { grid-template-columns: 1fr; gap: 1rem; }
     .page-content { padding: 1rem; }
     .logo h1 { font-size: 1.4rem; }
-    .logo-img { max-height: 95px; }
+    /* image keeps width:100%; aspect ratio scales it naturally */
 }
 
 /* ============================================================
@@ -1356,17 +1354,17 @@ main, .page-content, .post-card-body { overflow-wrap: break-word; word-wrap: bre
     visibility: visible;
 }
 .img-overlay img {
-    width: 95vw;
-    height: 90vh;
+    /* Default safety bounds — actual size is set inline by JS based on the
+       clicked image (about 2.5x its displayed size, capped at 95vw / 90vh). */
     max-width: 95vw;
     max-height: 90vh;
+    width: auto;
+    height: auto;
     object-fit: contain;
     border-radius: var(--radius);
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
     cursor: zoom-in;
     transition: transform 0.2s ease;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
 }
 .img-overlay.zoomed {
     overflow: auto;

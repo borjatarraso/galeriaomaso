@@ -146,12 +146,29 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
     var overlayImg = overlay.querySelector('img');
     var closeBtn = overlay.querySelector('.img-overlay-close');
 
-    function openOverlay(src) {
+    function openOverlay(src, sourceImg) {
         overlayImg.style.display = '';
+        overlayImg.style.width = '';
+        overlayImg.style.height = '';
         overlayImg.src = src;
         overlay.classList.add('active');
         overlay.classList.remove('zoomed');
         document.body.style.overflow = 'hidden';
+
+        // Size preview to ~2.5x the clicked image, capped at viewport.
+        if (sourceImg) {
+            var rect = sourceImg.getBoundingClientRect();
+            var srcW = rect.width || sourceImg.naturalWidth || 200;
+            var srcH = rect.height || sourceImg.naturalHeight || 200;
+            var scale = 2.5;
+            var targetW = srcW * scale;
+            var targetH = srcH * scale;
+            var maxW = window.innerWidth * 0.95;
+            var maxH = window.innerHeight * 0.90;
+            var fit = Math.min(maxW / targetW, maxH / targetH, 1);
+            overlayImg.style.width = Math.round(targetW * fit) + 'px';
+            overlayImg.style.height = Math.round(targetH * fit) + 'px';
+        }
     }
 
     function closeOverlay() {
@@ -180,15 +197,15 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
             if (link.classList.contains('yt-thumb-link')) return;
             var href = link.getAttribute('href') || '';
             var hrefIsImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(href);
+            var innerImg = link.querySelector('img');
             if (hrefIsImage) {
                 e.preventDefault();
-                openOverlay(href);
+                openOverlay(href, innerImg);
                 return;
             }
-            var innerImg = link.querySelector('img');
             if (innerImg && innerImg.getAttribute('src')) {
                 e.preventDefault();
-                openOverlay(innerImg.getAttribute('src'));
+                openOverlay(innerImg.getAttribute('src'), innerImg);
             }
         });
     }
