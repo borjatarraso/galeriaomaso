@@ -30,9 +30,9 @@ literalmente en el repositorio. Esto significa que puedes:
 |------|------------|----------|
 | Marcado | **HTML5** | Páginas escritas a mano. Atributo `lang="es"` por defecto; las traducciones se aplican en cliente (ver más abajo). |
 | Estilos | **CSS3** vanilla (sin preprocesador) | Un único archivo `style.css` (~1.500 líneas) usando variables CSS, Flexbox y Grid. No hay Sass, Less, Tailwind ni PostCSS. |
-| Comportamiento | **JavaScript ES5/ES6 vanilla** | Dos archivos: `site.js` (interacciones, menú, *lightbox* de imágenes, selector de idioma) y `translations.js` (cadenas de navegación traducidas). Sin frameworks (no React, no Vue, no jQuery). |
+| Comportamiento | **JavaScript ES5/ES6 vanilla** | Dos archivos: `site.js` (interacciones, menú, *lightbox* de imágenes, selector de idioma) y `translations.js` (cadenas de navegación traducidas). Sin frameworks (ni React, ni Vue, ni jQuery). |
 | Tipografía | **Google Fonts** | Familia `Cinzel Decorative` cargada vía `<link>` en cada página. |
-| Traducción | **Google Translate Element** | Se inyecta dinámicamente desde `site.js`. El menú propio traduce las cadenas de navegación; Google Translate cubre el resto del contenido (cuerpo, posts, etc.) para los 7 idiomas no-españoles soportados. |
+| Traducción | **Google Translate Element** | Se inyecta dinámicamente desde `site.js`. El menú propio traduce las cadenas de navegación; Google Translate cubre el resto del contenido (cuerpo, posts, etc.) para los 7 idiomas distintos del español soportados. |
 | Iconografía | **SVG inline** | Los iconos del menú superior están embebidos como SVG dentro del HTML. |
 | Favicon | **ICO multi-resolución** | `favicon.ico` con 7 tamaños (16, 24, 32, 48, 64, 128, 256 px). |
 | Imágenes | **JPG / PNG / WebP** | Se sirven directamente desde `images/`. No hay pipeline de optimización; sube las imágenes ya optimizadas (ver §6). |
@@ -77,11 +77,11 @@ post tiene su propio archivo dentro de `posts/`.
 
 El directorio `public/` contiene una copia idéntica del sitio. Es la carpeta
 desde la que el sitio se publica en producción. **Cuando modifiques o añadas
-un archivo, debes hacer el mismo cambio en ambos sitios**: en la raíz Y
+un archivo, debes hacer el mismo cambio en los dos lugares**: en la raíz **y**
 dentro de `public/`. Por ejemplo:
 
-- Editas `style.css` → también edita `public/style.css`.
-- Añades `images/nueva-obra.jpg` → también añade `public/images/nueva-obra.jpg`.
+- Si editas `style.css`, edita también `public/style.css`.
+- Si añades `images/nueva-obra.jpg`, añade también `public/images/nueva-obra.jpg`.
 
 Una forma rápida de mantenerlos sincronizados al final de tus cambios:
 
@@ -152,7 +152,7 @@ git checkout -b mejora/contraste-menu
 
 # 4. Haz tus cambios
 $EDITOR style.css
-# recuerda: si tocas un archivo raíz, copia también a public/
+# recuerda: si tocas un archivo de la raíz, cópialo también en public/
 
 # 5. Previsualiza (ver §3)
 
@@ -179,7 +179,7 @@ git push -u origin mejora/contraste-menu
   etc. (el repo tiene un `.gitignore` para los casos comunes).
 - **Para cambios grandes** (rediseño, sección nueva, refactor estructural),
   abre primero un **GitHub Issue** describiendo la propuesta. Así
-  consensuamos enfoque antes de invertir tiempo.
+  consensuamos el enfoque antes de invertir tiempo.
 
 ---
 
@@ -205,7 +205,7 @@ git push -u origin mejora/contraste-menu
 - **Formato:** JPG para fotografías, PNG para logos / iconos / capturas con
   texto, WebP si necesitas mejor compresión.
 - **Tamaño máximo recomendado:** 2.000 px en el lado mayor para fotografías
-  de obra. Más grande raramente aporta, y aumenta la carga.
+  de obra. Tamaños mayores rara vez aportan algo y aumentan la carga.
 - **Peso por archivo:** intenta no superar 1 MB por imagen. Optimiza con
   herramientas como `jpegoptim`, `pngquant`, `squoosh.app`, o el propio
   exportador de tu editor de imagen.
