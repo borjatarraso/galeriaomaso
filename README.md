@@ -201,6 +201,52 @@ Both PDFs embed the three diagrams above at full resolution.
 
 ---
 
+## Contributing
+
+This repo is public on GitHub and external contributions are welcome. You do
+**not** need Lynx Factory, the multiplexer, or any of the local tooling
+described above — those are operator conveniences for the maintainer. A plain
+git + GitHub workflow is enough.
+
+```bash
+# 1. fork the repo on GitHub (Fork button, top-right of the repo page)
+# 2. clone your fork
+git clone https://github.com/<your-username>/galeriaomaso.git
+cd galeriaomaso
+
+# 3. create a topic branch
+git checkout -b fix/typo-on-homepage
+
+# 4. make your change, preview locally (no build step required — open the html)
+$EDITOR index.html
+xdg-open index.html
+
+# 5. commit + push to your fork
+git add -A
+git commit -m "Fix typo on hero subtitle"
+git push -u origin fix/typo-on-homepage
+
+# 6. open a Pull Request on GitHub
+#    Your fork's page will show a "Compare & pull request" button.
+#    Target the upstream `borjatarraso/galeriaomaso` repo, `main` branch.
+```
+
+> GitHub calls these **Pull Requests** (PRs); GitLab calls the same thing
+> Merge Requests (MRs). Same concept either way.
+
+**Borja Tarraso** (`<borja.tarraso@member.fsf.org>`) will review every PR and
+either merge it (sometimes with small adjustments) or leave review comments
+explaining why a change can't be accepted in its current form. Please:
+
+- Keep PRs focused — one logical change per PR is easier to review than a
+  large multi-purpose patch.
+- Write a short PR description explaining *why* the change is useful, not
+  just *what* the change is (the diff already shows the what).
+- For bigger ideas (new pages, design changes, structural moves), open a
+  GitHub issue first to agree on the approach before investing time.
+
+---
+
 ## License & author
 
 Author: **Borja Tarraso** &nbsp;`<borja.tarraso@member.fsf.org>`
