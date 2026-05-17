@@ -1,0 +1,208 @@
+# Galería O+O — galeriaomaso.com
+
+Bilingual (EN/ES) art-gallery website for **Galería Oriente y Occidente**.
+
+- **Live site:** https://www.galeriaomaso.com
+- **Hosting:** Cloudflare Workers (deployed via `wrangler`)
+- **DNS:** Arsys (registrar) → Cloudflare nameservers
+- **Repo:** https://github.com/borjatarraso/galeriaomaso
+- **Stack:** static HTML / CSS / JS — no build step, no CMS
+
+> The site was split out of the older `enriquetahueso` repository on
+> 2026-05-17. Cross-links between the two sites use absolute URLs.
+
+---
+
+## How a content change reaches visitors
+
+```
+edit  →  commit  →  push  →  Cloudflare build  →  serve from edge
+```
+
+The same five-stage flow that every modern static site uses. Each stage
+runs on a different machine and can fail independently — which is why we
+verify end-to-end on every push.
+
+### Overview diagram
+
+![Five-stage deploy flow — abstract](docs/deploy_pipeline_overview.jpg)
+
+> Click for full resolution: [`docs/deploy_pipeline_overview.png`](docs/deploy_pipeline_overview.png)
+
+### Detailed diagram (stages + APIs + cache layers + DNS)
+
+![Detailed pipeline](docs/deploy_pipeline_detailed.jpg)
+
+> Full-screen: [`docs/deploy_pipeline_detailed.png`](docs/deploy_pipeline_detailed.png)
+
+### Internals (every API call, fallback, verify loop)
+
+![Pipeline internals](docs/deploy_pipeline_internals.jpg)
+
+> Full-screen: [`docs/deploy_pipeline_internals.png`](docs/deploy_pipeline_internals.png)
+
+---
+
+## Day-to-day workflow
+
+```bash
+# 1. edit any html / css / js / image in this repo
+$EDITOR index.html
+
+# 2. commit + push to main
+git add -A && git commit -m "Tweak hero copy"
+git push origin main
+
+# 3. wait ~30–60 s, then verify the live site has the new version
+curl -sI https://www.galeriaomaso.com/style.css | grep -i etag
+```
+
+If the live site does **not** pick up the change within ~2 minutes, see
+the troubleshooting section below — Cloudflare's GitHub auto-deploy
+integration can silently disconnect, which is exactly why we built the
+verification tooling described next.
+
+---
+
+## Why we ship our own verifier
+
+Cloudflare's "push and forget" GitHub integration looks reliable but has
+two failure modes that are silent from the publisher's point of view:
+
+1. **The webhook can desync.** A repo permission change, a token rotation
+   or even a transient GitHub outage can leave the integration in a
+   "connected but not firing" state. The dashboard still says *Connected*.
+2. **A build succeeds without reaching the edge.** The Cloudflare build
+   log is green, but the asset that the public sees still hashes to the
+   previous version. This happens around cache-busting / route conflicts.
+
+Our companion tool (**Lynx Factory** — a local-only dashboard) closes
+both gaps by:
+
+- Hashing the local artifact (e.g. `style.css`) with SHA-256.
+- Fetching the same asset from the live URL.
+- Comparing the two. If they differ, it re-issues the deploy with
+  `wrangler` and polls every 5 s for up to 90 s.
+
+The **Test** button in that dashboard turns **green only when the live
+SHA matches local**. No more "I pushed, looks fine, but visitors see the
+old page".
+
+> **Heads-up:** never use an HTML page as the fingerprint asset.
+> Cloudflare's bot-management layer injects a per-request `<script>` tag
+> into HTML responses, so the hash always changes. Pick a CSS/JS/font/
+> image asset instead.
+
+---
+
+## Cloudflare configuration (sanitized)
+
+The deploy verifier and the auto-redeploy watcher need three pieces of
+metadata. Real values live only in shell env vars (`CF_API_TOKEN_*`) on
+the maintainer's machine — **never** committed.
+
+| Setting | Value |
+|---------|-------|
+| Account ID | `XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` |
+| Zone ID (galeriaomaso.com) | `XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` |
+| Pages / Workers project | `galeriaomaso` |
+| Deploy method | `wrangler` (runs `npx wrangler deploy` from `public/`) |
+| API token env var | `CF_API_TOKEN_GALERIAOMASO` |
+| Auto-redeploy branch | `main` |
+
+### Token scope (least-privilege)
+
+The deploy token only needs:
+
+- **Account → Workers Scripts → Edit**
+- **Zone → galeriaomaso.com → Cache Purge → Purge** *(optional, for
+  manual cache busts)*
+
+We deliberately do **not** use the broader "Account → Pages → Edit"
+token here — least-privilege keeps the blast radius small if the token
+ever leaks.
+
+```sh
+# ~/.bashrc.d/galeriaomaso_cf.sh   (chmod 600, never committed)
+export CF_API_TOKEN_GALERIAOMASO="cfat_XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+export CF_ZONE_ID_GALERIAOMASO="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+```
+
+After editing:
+
+```bash
+source ~/.bashrc.d/galeriaomaso_cf.sh
+# restart the local dashboard so the env var is picked up
+```
+
+---
+
+## Troubleshooting
+
+### "I pushed but the site looks unchanged"
+
+```bash
+# 1. did the push reach GitHub?
+git log origin/main -1
+
+# 2. did Cloudflare build it?
+#    → check the Workers deployments tab in the dashboard
+
+# 3. does the live asset differ from the local one?
+sha256sum public/style.css
+curl -s https://www.galeriaomaso.com/style.css | sha256sum
+
+# 4. force a redeploy from the local checkout
+cd public && npx wrangler deploy
+```
+
+### Cloudflare GitHub integration looks "connected" but doesn't fire
+
+Disconnect and reconnect in **Workers & Pages → galeriaomaso → Settings
+→ Builds & deployments → Source**. Then push a trivial commit to verify
+the webhook actually triggers a new build.
+
+### DNS / TLS
+
+- Nameservers must point at Cloudflare (managed at Arsys).
+- TLS mode in Cloudflare: **Full (strict)**.
+- Always Use HTTPS: **On**.
+
+---
+
+## Full deployment guide
+
+A complete, plain-language walkthrough of the whole pipeline — including
+zero-knowledge onboarding, an internals appendix, and a glossary — is
+shipped alongside this README in both English and Spanish.
+
+- 📕 English: [`docs/deploy_pipeline_guide_en.pdf`](docs/deploy_pipeline_guide_en.pdf)
+- 📗 Español: [`docs/deploy_pipeline_guide_es.pdf`](docs/deploy_pipeline_guide_es.pdf)
+
+Both PDFs embed the three diagrams above at full resolution.
+
+---
+
+## Layout
+
+```
+.
+├── index.html              # landing page
+├── artistas.html           # artists section
+├── exposiciones.html       # exhibitions
+├── posts/                  # individual articles
+├── images/                 # photographic assets
+├── assets/                 # shared static assets
+├── style.css               # site-wide stylesheet (fingerprinted asset)
+├── site.js                 # interactive bits
+├── translations.js         # EN/ES strings
+└── public/                 # `wrangler deploy` runs from here
+```
+
+---
+
+## License & author
+
+Author: **Borja Tarraso** &nbsp;`<borja.tarraso@member.fsf.org>`
+
+This repository is released under the **BSD-3-Clause** license.
