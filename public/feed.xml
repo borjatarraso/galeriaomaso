@@ -5,8 +5,15 @@
     <link>https://galeriaomaso.com/</link>
     <description>Exposiciones, artistas y noticias de Galería O+O (Valencia, España).</description>
     <language>es-ES</language>
-    <lastBuildDate>Thu, 21 May 2026 05:46:30 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 22 May 2026 19:54:18 +0000</lastBuildDate>
     <atom:link href="https://galeriaomaso.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Arte español en Times Square — Nueva York 2024</title>
+      <link>https://galeriaomaso.com/posts/post-2024-02-arte-espanol-times-square-nueva-york</link>
+      <guid isPermaLink="true">https://galeriaomaso.com/posts/post-2024-02-arte-espanol-times-square-nueva-york</guid>
+      <pubDate>Thu, 01 Feb 2024 12:00:00 +0000</pubDate>
+      <description>En febrero de 2024, una selección de obra de artistas españoles contemporáneos —entre ellos Luis González , artista de la Galería O+O— se proyectó en…</description>
+    </item>
     <item>
       <title>Arte Y Mediación Finaliza La Exposición 3</title>
       <link>https://galeriaomaso.com/posts/post-2022-05-arte-y-mediacion-finaliza-la-exposicion_3</link>
@@ -349,13 +356,6 @@
       <guid isPermaLink="true">https://galeriaomaso.com/posts/post-2017-09-reflejos-de-monique-thomas</guid>
       <pubDate>Fri, 01 Sep 2017 12:00:00 +0000</pubDate>
       <description>&amp;quot;Reflejos&amp;quot; Del 6 de octubre al 6 de noviembre de 2017 Inauguración: Viernes 6 de octubre a las 20:00h. Reflejos, de Monique Thomas Sin duda la pintura…</description>
-    </item>
-    <item>
-      <title>&quot;Diálogo Cubista&quot; de Albert Sesma</title>
-      <link>https://galeriaomaso.com/posts/post-2017-06-dialogo-cubista-de-albert-sesma</link>
-      <guid isPermaLink="true">https://galeriaomaso.com/posts/post-2017-06-dialogo-cubista-de-albert-sesma</guid>
-      <pubDate>Thu, 01 Jun 2017 12:00:00 +0000</pubDate>
-      <description>&amp;quot;Diálogo Cubista&amp;quot; Del 16 de junio al 16 de julio de 2017 Inauguración: Viernes 16 de junio a las 20:00h. Diálogo Cubista, de Albert Sesma No es la…</description>
     </item>
   </channel>
 </rss>
