@@ -49,7 +49,7 @@ img { max-width: 100%; height: auto; border-radius: var(--radius); }
    Header
    ============================================================ */
 header {
-    background: linear-gradient(180deg, #1a010d 0%, var(--bg-darker) 40%, var(--bg-dark) 100%);
+    background: var(--bg-dark);
     border-bottom: 2px solid var(--accent);
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
@@ -1700,23 +1700,8 @@ main, .page-content, .post-card-body { overflow-wrap: break-word; word-wrap: bre
     object-fit: contain;
     border-radius: var(--radius);
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
-    cursor: zoom-in;
+    cursor: zoom-out;
     transition: transform 0.2s ease;
-}
-.img-overlay.zoomed {
-    overflow: auto;
-    cursor: zoom-out;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding: 1rem;
-}
-.img-overlay.zoomed img {
-    max-width: none;
-    max-height: none;
-    width: auto;
-    height: auto;
-    cursor: zoom-out;
-    border-radius: 0;
 }
 .img-overlay-close {
     position: absolute;
@@ -1837,7 +1822,7 @@ nav { display: flex; align-items: center; }
 
 /* Top bar with Socials (left) + Nav (center) + Toolbar (right) */
 .site-topbar {
-    background: #1a010d;
+    background: var(--bg-dark);
     border-bottom: 1px solid var(--border);
     padding: 0.3rem 1.25rem;
     position: sticky;
