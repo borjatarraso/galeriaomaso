@@ -42,7 +42,7 @@ section_priority = {
     'exposiciones.html': ('0.9', 'weekly'),
     'artistas.html': ('0.8', 'monthly'),
     'articulos.html': ('0.7', 'monthly'),
-    'internacional.html': ('0.7', 'monthly'),
+    'criticas.html': ('0.7', 'monthly'),
     'ferias.html': ('0.7', 'monthly'),
     'cursos.html': ('0.6', 'monthly'),
     'noticias.html': ('0.6', 'monthly'),
@@ -125,7 +125,7 @@ llms = """# Galería O+O 东西方画廊
 - [Exposiciones](https://galeriaomaso.com/exposiciones): Exhibition archive (300+ shows since 2007)
 - [Artistas](https://galeriaomaso.com/artistas): Roster of represented artists
 - [Artículos](https://galeriaomaso.com/articulos): Articles and essays
-- [Internacional](https://galeriaomaso.com/internacional): International projects (China + others)
+- [Críticas](https://galeriaomaso.com/criticas): Critical reviews and essays
 - [Ferias](https://galeriaomaso.com/ferias): Art fairs
 - [Cursos](https://galeriaomaso.com/cursos): Workshops and courses
 - [Noticias](https://galeriaomaso.com/noticias): News

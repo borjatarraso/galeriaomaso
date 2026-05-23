@@ -118,7 +118,9 @@ def render_img(attrs) -> str:
         if v is None:
             parts.append(k)
         else:
-            parts.append(f'{k}="{html.escape(v, quote=True)}"')
+            # Idempotent escape: unescape first so re-runs don't double-encode
+            # (e.g. alt="A &amp; B" must stay "A &amp; B", not become "A &amp;amp; B").
+            parts.append(f'{k}="{html.escape(html.unescape(v), quote=True)}"')
     return '<img ' + ' '.join(parts) + '>'
 
 

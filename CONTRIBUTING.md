@@ -50,7 +50,7 @@ literalmente en el repositorio. Esto significa que puedes:
 ├── exposiciones.html         # Listados de secciones principales
 ├── artistas.html
 ├── articulos.html
-├── internacional.html
+├── criticas.html
 ├── ferias.html
 ├── cursos.html
 ├── noticias.html

@@ -14,7 +14,7 @@
 - [Exposiciones](https://galeriaomaso.com/exposiciones): Exhibition archive (300+ shows since 2007)
 - [Artistas](https://galeriaomaso.com/artistas): Roster of represented artists
 - [Artículos](https://galeriaomaso.com/articulos): Articles and essays
-- [Internacional](https://galeriaomaso.com/internacional): International projects (China + others)
+- [Críticas](https://galeriaomaso.com/criticas): Critical reviews and essays
 - [Ferias](https://galeriaomaso.com/ferias): Art fairs
 - [Cursos](https://galeriaomaso.com/cursos): Workshops and courses
 - [Noticias](https://galeriaomaso.com/noticias): News
