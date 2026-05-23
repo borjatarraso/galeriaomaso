@@ -1,9 +1,17 @@
 /* Galería O+O - Site JavaScript with Language + Mode controls */
 
-// Mobile menu toggle
-document.querySelector('.menu-toggle').addEventListener('click', function() {
-    document.querySelector('.nav-links').classList.toggle('open');
-});
+// Mobile menu toggle — toggles .open on both the topbar nav wrapper
+// (so its CSS picks up the dropdown) and the nav-links itself.
+(function() {
+    var btn = document.querySelector('.menu-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+        var topnav = btn.closest('.gal-topnav');
+        if (topnav) topnav.classList.toggle('open');
+        var links = (topnav || document).querySelector('.nav-links');
+        if (links) links.classList.toggle('open');
+    });
+})();
 
 // ============================================================
 // Google Translate (full-page MT for body content)
@@ -320,8 +328,15 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
             var link = e.target.closest('a');
             if (!link) return;
             if (link.classList.contains('yt-thumb-link')) return;
+            // Links the user intends as navigation (target=_blank, .enlace-card,
+            // or any anchor whose href is a real URL to a non-image) should
+            // navigate normally — never hijack them into the image lightbox.
             var href = link.getAttribute('href') || '';
             var hrefIsImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(href);
+            var isNavTarget = link.target === '_blank' ||
+                              link.classList.contains('enlace-card') ||
+                              (href && /^https?:\/\//i.test(href) && !hrefIsImage);
+            if (isNavTarget) return;
             var innerImg = link.querySelector('img');
             if (hrefIsImage) {
                 e.preventDefault();
@@ -507,20 +522,107 @@ document.querySelector('.menu-toggle').addEventListener('click', function() {
     var success = document.getElementById('galFormSuccess');
     var EMAIL = 'enriqueta.hueso@gmail.com';
 
+    var razonSelect = document.getElementById('gRazon');
+    var razonLabels = {
+        'exponer': 'Interesado/a en exponer',
+        'critica': 'Crítica de arte',
+        'compra-venta': 'Compra-venta de obras',
+        'curso-taller': 'Cursos o talleres',
+        'visita': 'Visita guiada o cita previa',
+        'prensa': 'Prensa y comunicación',
+        'colaboracion': 'Colaboración o proyecto cultural',
+        'otro': 'Otro'
+    };
+
+    // Preselect "Razón de contacto" + prefill asunto from ?razon=… URL parameter
+    if (razonSelect) {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var razonParam = params.get('razon');
+            if (razonParam && razonLabels[razonParam]) {
+                razonSelect.value = razonParam;
+                var asuntoField = document.getElementById('gAsunto');
+                if (asuntoField && !asuntoField.value) {
+                    asuntoField.value = razonLabels[razonParam];
+                }
+            }
+        } catch (err) { /* URLSearchParams unsupported — skip preselect */ }
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         var nombre = document.getElementById('gNombre').value;
         var email = document.getElementById('gEmail').value;
+        var razon = razonSelect ? razonSelect.value : '';
         var asunto = document.getElementById('gAsunto').value;
         var mensaje = document.getElementById('gMensaje').value;
-        if (!nombre || !email || !asunto || !mensaje) return;
+        if (!nombre || !email || !razon || !asunto || !mensaje) return;
 
-        var subject = encodeURIComponent(asunto);
-        var body = encodeURIComponent('Nombre: ' + nombre + '\nEmail: ' + email + '\n\n' + mensaje);
+        var razonLabel = razonLabels[razon] || razon;
+        var subject = encodeURIComponent('[' + razonLabel + '] ' + asunto);
+        var body = encodeURIComponent(
+            'Nombre: ' + nombre + '\n' +
+            'Email: ' + email + '\n' +
+            'Razón de contacto: ' + razonLabel + '\n\n' +
+            mensaje
+        );
         window.location.href = 'mailto:' + EMAIL + '?subject=' + subject + '&body=' + body;
 
         success.classList.add('show');
         form.reset();
         setTimeout(function() { success.classList.remove('show'); }, 6000);
+    });
+})();
+
+// ============================================================
+// Critique Modal — opens full critique text from inline <template>
+// ============================================================
+(function() {
+    var modal = document.getElementById('criticaModal');
+    if (!modal) return;
+    var content = modal.querySelector('#criticaModalContent');
+    var lastTrigger = null;
+
+    function openCritica(triggerBtn) {
+        var id = triggerBtn.getAttribute('data-critica');
+        if (!id) return;
+        var tpl = document.getElementById('critica-' + id);
+        if (!tpl) return;
+        // Clone template contents into the modal panel.
+        content.innerHTML = '';
+        content.appendChild(tpl.content ? tpl.content.cloneNode(true) : tpl.cloneNode(true));
+        lastTrigger = triggerBtn;
+        modal.hidden = false;
+        document.body.classList.add('critica-modal-open');
+        // Move focus into the dialog so screen readers and keyboard users land here.
+        setTimeout(function() { content.focus(); content.scrollTop = 0; }, 0);
+    }
+
+    function closeCritica() {
+        if (modal.hidden) return;
+        modal.hidden = true;
+        document.body.classList.remove('critica-modal-open');
+        content.innerHTML = '';
+        if (lastTrigger && typeof lastTrigger.focus === 'function') {
+            lastTrigger.focus();
+        }
+    }
+
+    // Open: any click on a .critique-link button.
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.critique-link[data-critica]');
+        if (btn) {
+            e.preventDefault();
+            openCritica(btn);
+            return;
+        }
+        if (e.target.closest('[data-critica-close]')) {
+            closeCritica();
+        }
+    });
+
+    // Close on Escape.
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.hidden) closeCritica();
     });
 })();
