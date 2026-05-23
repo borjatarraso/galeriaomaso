@@ -312,14 +312,8 @@
 
     overlay.addEventListener('click', closeOverlay);
     closeBtn.addEventListener('click', function(e) { e.stopPropagation(); closeOverlay(); });
-    overlayImg.addEventListener('click', function(e) {
-        e.stopPropagation();
-        overlay.classList.toggle('zoomed');
-    });
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeOverlay();
-        if (e.key === '+' || e.key === '=') overlay.classList.add('zoomed');
-        if (e.key === '-' || e.key === '0') overlay.classList.remove('zoomed');
     });
 
     var content = document.querySelector('.page-content');
