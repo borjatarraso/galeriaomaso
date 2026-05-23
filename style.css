@@ -75,13 +75,11 @@ header > nav { display: none; }
 
 .logo-img {
     display: block;
-    width: 100%;
-    max-width: 100%;
+    width: auto;
+    max-width: 90%;
     height: auto;
-    aspect-ratio: 2172 / 298;
-    object-fit: cover;
-    object-position: center 41%;
-    margin: 0 auto;
+    max-height: clamp(64px, 11vw, 110px);
+    margin: 0.9rem auto;
 }
 
 /* Legacy text-logo rules kept harmless in case any page still uses them */
