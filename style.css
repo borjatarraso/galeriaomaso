@@ -1083,6 +1083,7 @@ main {
     position: relative;
     width: min(880px, 100%);
     max-height: calc(100vh - 3rem);
+    max-height: calc(100dvh - 3rem);
     background: var(--bg-card);
     border: 1px solid var(--accent);
     border-radius: var(--radius);
@@ -1173,6 +1174,17 @@ main {
 }
 
 body.critica-modal-open { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+    .critica-modal-close,
+    .critica-modal-close:hover,
+    .critica-modal-close:focus-visible {
+        transform: none !important;
+        transition: none !important;
+    }
+    .critique-card { transition: none !important; }
+    .critique-card:hover { transform: none !important; }
+}
 
 .critique-cta {
     margin: 3rem auto 1rem;

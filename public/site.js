@@ -581,20 +581,25 @@
     var modal = document.getElementById('criticaModal');
     if (!modal) return;
     var content = modal.querySelector('#criticaModalContent');
+    var panel = modal.querySelector('.critica-modal-panel');
     var lastTrigger = null;
+
+    var FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]),' +
+                    'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     function openCritica(triggerBtn) {
         var id = triggerBtn.getAttribute('data-critica');
         if (!id) return;
         var tpl = document.getElementById('critica-' + id);
         if (!tpl) return;
-        // Clone template contents into the modal panel.
         content.innerHTML = '';
         content.appendChild(tpl.content ? tpl.content.cloneNode(true) : tpl.cloneNode(true));
+        // aria-labelledby — point to the cloned <h2 id="critica-title-…">
+        var titleEl = content.querySelector('h2[id^="critica-title-"]');
+        if (titleEl) modal.setAttribute('aria-labelledby', titleEl.id);
         lastTrigger = triggerBtn;
         modal.hidden = false;
         document.body.classList.add('critica-modal-open');
-        // Move focus into the dialog so screen readers and keyboard users land here.
         setTimeout(function() { content.focus(); content.scrollTop = 0; }, 0);
     }
 
@@ -608,7 +613,6 @@
         }
     }
 
-    // Open: any click on a .critique-link button.
     document.addEventListener('click', function(e) {
         var btn = e.target.closest('.critique-link[data-critica]');
         if (btn) {
@@ -621,8 +625,26 @@
         }
     });
 
-    // Close on Escape.
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !modal.hidden) closeCritica();
+        if (modal.hidden) return;
+        if (e.key === 'Escape') { closeCritica(); return; }
+        if (e.key !== 'Tab') return;
+        // Focus trap — cycle Tab focus inside the modal panel.
+        var focusables = panel.querySelectorAll(FOCUSABLE);
+        if (!focusables.length) { e.preventDefault(); content.focus(); return; }
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        var active = document.activeElement;
+        if (e.shiftKey) {
+            if (active === first || active === content || !panel.contains(active)) {
+                e.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (active === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
     });
 })();
