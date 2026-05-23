@@ -1175,6 +1175,8 @@ main {
 
 body.critica-modal-open { overflow: hidden; }
 
+#enviar-mensaje { scroll-margin-top: 72px; }
+
 @media (prefers-reduced-motion: reduce) {
     .critica-modal-close,
     .critica-modal-close:hover,
