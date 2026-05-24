@@ -2,6 +2,7 @@
 
 // Mobile menu toggle — toggles .open on both the topbar nav wrapper
 // (so its CSS picks up the dropdown) and the nav-links itself.
+// Esc closes the menu when it's open.
 (function() {
     var btn = document.querySelector('.menu-toggle');
     if (!btn) return;
@@ -11,6 +12,15 @@
         if (topnav) topnav.classList.toggle('open');
         var links = (topnav || document).querySelector('.nav-links');
         if (links) links.classList.toggle('open');
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        var topnav = document.querySelector('.gal-topnav.open');
+        if (!topnav) return;
+        topnav.classList.remove('open');
+        var links = topnav.querySelector('.nav-links.open');
+        if (links) links.classList.remove('open');
+        try { btn.focus(); } catch (err) {}
     });
 })();
 
@@ -683,74 +693,170 @@
 
         svg.innerHTML = [
             '<defs>',
-              '<radialGradient id="oo-bg" cx="50%" cy="42%" r="75%">',
-                '<stop offset="0%" stop-color="#4a0a2e"/>',
-                '<stop offset="55%" stop-color="#2a0115"/>',
-                '<stop offset="100%" stop-color="#0c0006"/>',
+              // Vignette gradient — deepens edges, warm at centre
+              '<radialGradient id="oo-vignette" cx="50%" cy="42%" r="78%">',
+                '<stop offset="0%" stop-color="#3a0820" stop-opacity="0"/>',
+                '<stop offset="60%" stop-color="#14010a" stop-opacity="0.55"/>',
+                '<stop offset="100%" stop-color="#050003" stop-opacity="0.95"/>',
               '</radialGradient>',
+              // Paper-warm overlay (subtle cream sheen)
+              '<radialGradient id="oo-paper-g" cx="50%" cy="40%" r="65%">',
+                '<stop offset="0%" stop-color="#f4e4c1" stop-opacity="0.18"/>',
+                '<stop offset="100%" stop-color="#f4e4c1" stop-opacity="0"/>',
+              '</radialGradient>',
+              // Brush roughness (displacement noise for hand-painted feel)
               '<filter id="oo-brush" x="-10%" y="-10%" width="120%" height="120%">',
-                '<feTurbulence type="fractalNoise" baseFrequency="0.018 0.04" numOctaves="2" seed="3" result="t"/>',
-                '<feDisplacementMap in="SourceGraphic" in2="t" scale="11" xChannelSelector="R" yChannelSelector="G"/>',
+                '<feTurbulence type="fractalNoise" baseFrequency="0.022 0.045" numOctaves="2" seed="7" result="t"/>',
+                '<feDisplacementMap in="SourceGraphic" in2="t" scale="12" xChannelSelector="R" yChannelSelector="G"/>',
               '</filter>',
-              '<filter id="oo-soft" x="-20%" y="-20%" width="140%" height="140%">',
-                '<feGaussianBlur stdDeviation="1.6"/>',
+              // Watercolor bleed (heavier blur + displacement)
+              '<filter id="oo-watercolor" x="-30%" y="-30%" width="160%" height="160%">',
+                '<feGaussianBlur stdDeviation="5" result="b1"/>',
+                '<feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="4" result="wt"/>',
+                '<feDisplacementMap in="b1" in2="wt" scale="26"/>',
+                '<feGaussianBlur stdDeviation="3"/>',
               '</filter>',
+              // Soft glow for splatters
+              '<filter id="oo-soft" x="-50%" y="-50%" width="200%" height="200%">',
+                '<feGaussianBlur stdDeviation="1.8"/>',
+              '</filter>',
+              // Watercolor bloom gradients
+              '<radialGradient id="oo-bloom-burgundy">',
+                '<stop offset="0%" stop-color="#8b1538" stop-opacity="0.55"/>',
+                '<stop offset="60%" stop-color="#4a0a2e" stop-opacity="0.22"/>',
+                '<stop offset="100%" stop-color="#4a0a2e" stop-opacity="0"/>',
+              '</radialGradient>',
+              '<radialGradient id="oo-bloom-gold">',
+                '<stop offset="0%" stop-color="#ffd966" stop-opacity="0.55"/>',
+                '<stop offset="60%" stop-color="#c47a3a" stop-opacity="0.22"/>',
+                '<stop offset="100%" stop-color="#c47a3a" stop-opacity="0"/>',
+              '</radialGradient>',
+              '<radialGradient id="oo-bloom-vermillion">',
+                '<stop offset="0%" stop-color="#c41e3a" stop-opacity="0.5"/>',
+                '<stop offset="60%" stop-color="#8b1538" stop-opacity="0.2"/>',
+                '<stop offset="100%" stop-color="#8b1538" stop-opacity="0"/>',
+              '</radialGradient>',
+              '<radialGradient id="oo-bloom-cream">',
+                '<stop offset="0%" stop-color="#f4e4c1" stop-opacity="0.35"/>',
+                '<stop offset="60%" stop-color="#f4e4c1" stop-opacity="0.1"/>',
+                '<stop offset="100%" stop-color="#f4e4c1" stop-opacity="0"/>',
+              '</radialGradient>',
+              // Final glint radial
               '<radialGradient id="oo-glint-g" cx="50%" cy="50%" r="50%">',
-                '<stop offset="0%" stop-color="#fff7d4" stop-opacity="0.9"/>',
-                '<stop offset="60%" stop-color="#ffd966" stop-opacity="0.25"/>',
+                '<stop offset="0%" stop-color="#fff7d4" stop-opacity="0.95"/>',
+                '<stop offset="55%" stop-color="#ffd966" stop-opacity="0.3"/>',
                 '<stop offset="100%" stop-color="#ffd966" stop-opacity="0"/>',
               '</radialGradient>',
+              // Gold-leaf sheen — luminous bar that sweeps across the logo
+              '<linearGradient id="oo-sheen-g" x1="0%" y1="0%" x2="100%" y2="0%">',
+                '<stop offset="0%"  stop-color="#ffd966" stop-opacity="0"/>',
+                '<stop offset="42%" stop-color="#fff7d4" stop-opacity="0"/>',
+                '<stop offset="50%" stop-color="#fff7d4" stop-opacity="0.95"/>',
+                '<stop offset="58%" stop-color="#fff7d4" stop-opacity="0"/>',
+                '<stop offset="100%" stop-color="#ffd966" stop-opacity="0"/>',
+              '</linearGradient>',
             '</defs>',
 
-            '<rect width="1600" height="900" fill="url(#oo-bg)"/>',
+            // ----- Layer 0: deep canvas + vignette + paper warmth -----
+            '<rect width="1600" height="900" fill="#0d0107"/>',
+            '<rect class="oo-vignette" width="1600" height="900" fill="url(#oo-vignette)"/>',
+            '<rect class="oo-paper"    width="1600" height="900" fill="url(#oo-paper-g)"/>',
 
-            // Three sweeping abstract brushstrokes (painted in sequence)
+            // ----- Layer 1: watercolor pools (soft pools of pigment) -----
+            '<g filter="url(#oo-watercolor)">',
+              '<ellipse class="oo-bloom b1" cx="420"  cy="380" rx="240" ry="180" fill="url(#oo-bloom-burgundy)"/>',
+              '<ellipse class="oo-bloom b2" cx="1180" cy="500" rx="280" ry="200" fill="url(#oo-bloom-gold)"/>',
+              '<ellipse class="oo-bloom b3" cx="850"  cy="280" rx="220" ry="160" fill="url(#oo-bloom-cream)"/>',
+              '<ellipse class="oo-bloom b4" cx="720"  cy="680" rx="260" ry="170" fill="url(#oo-bloom-vermillion)"/>',
+            '</g>',
+
+            // ----- Layer 2: bold black sumi-e ink gestures -----
             '<g filter="url(#oo-brush)">',
-              '<path pathLength="1" class="oo-stroke s1" stroke="#ffd966" stroke-width="32"',
-                ' d="M 80 660 C 360 380, 720 220, 1040 320 S 1440 580, 1540 520"/>',
-              '<path pathLength="1" class="oo-stroke s2" stroke="#741b47" stroke-width="58" stroke-opacity="0.85"',
-                ' d="M 180 220 C 460 460, 820 720, 1180 540 S 1500 280, 1560 240"/>',
-              '<path pathLength="1" class="oo-stroke s3" stroke="#c9a84a" stroke-width="14"',
-                ' d="M 60 480 C 380 360, 660 600, 980 460 S 1380 360, 1560 440"/>',
-              '<path pathLength="1" class="oo-stroke s4" stroke="#8a2a55" stroke-width="22" stroke-opacity="0.75"',
-                ' d="M 240 800 C 540 660, 820 780, 1100 700 S 1440 760, 1540 720"/>',
+              '<path pathLength="1" class="oo-stroke s1" stroke="#0c0006" stroke-width="44" stroke-opacity="0.92"',
+                ' d="M 140 200 C 380 320, 640 480, 900 460 S 1320 300, 1480 240"/>',
+              '<path pathLength="1" class="oo-stroke s2" stroke="#0c0006" stroke-width="32" stroke-opacity="0.82"',
+                ' d="M 200 740 C 480 600, 780 540, 1080 620 S 1380 740, 1500 700"/>',
             '</g>',
 
-            // Splatter pigment
+            // ----- Layer 3: accent gestural strokes (gold / ochre / vermillion) -----
+            '<g filter="url(#oo-brush)">',
+              '<path pathLength="1" class="oo-stroke s3" stroke="#ffd966" stroke-width="14" stroke-opacity="0.9"',
+                ' d="M 80 540 C 360 460, 660 560, 980 480 S 1360 420, 1560 480"/>',
+              '<path pathLength="1" class="oo-stroke s4" stroke="#c47a3a" stroke-width="18" stroke-opacity="0.7"',
+                ' d="M 100 400 C 380 540, 700 380, 1020 540 S 1340 460, 1520 540"/>',
+              '<path pathLength="1" class="oo-stroke s5" stroke="#8b1538" stroke-width="10" stroke-opacity="0.85"',
+                ' d="M 280 820 C 520 760, 800 820, 1080 780 S 1340 800, 1480 760"/>',
+            '</g>',
+
+            // ----- Layer 4: ensō — hand-painted Zen circle around the centre -----
+            '<g filter="url(#oo-brush)">',
+              '<path pathLength="1" class="oo-enso" stroke="#0c0006" stroke-width="20" stroke-opacity="0.9" fill="none"',
+                ' d="M 800 460 m -210 0 a 210 210 0 1 1 400 -42 a 210 210 0 0 1 -400 50"/>',
+            '</g>',
+
+            // ----- Layer 5: splatter pigment dots (gold + vermillion + cream) -----
             '<g fill="#ffd966" filter="url(#oo-soft)">',
-              '<circle class="oo-splat d1" cx="380"  cy="430" r="6"  opacity="0.8"/>',
-              '<circle class="oo-splat d2" cx="640"  cy="290" r="4"  opacity="0.7"/>',
-              '<circle class="oo-splat d3" cx="900"  cy="520" r="7"  opacity="0.85"/>',
-              '<circle class="oo-splat d4" cx="1180" cy="380" r="5"  opacity="0.65"/>',
+              '<circle class="oo-splat d1" cx="380"  cy="430" r="6"   opacity="0.85"/>',
+              '<circle class="oo-splat d2" cx="640"  cy="290" r="4"   opacity="0.75"/>',
+              '<circle class="oo-splat d3" cx="900"  cy="520" r="7"   opacity="0.85"/>',
+              '<circle class="oo-splat d4" cx="1180" cy="380" r="5"   opacity="0.65"/>',
               '<circle class="oo-splat d5" cx="1310" cy="610" r="3.5" opacity="0.55"/>',
-              '<circle class="oo-splat d6" cx="500"  cy="710" r="4.5" opacity="0.7"/>',
+              '<circle class="oo-splat d6" cx="500"  cy="710" r="4.5" opacity="0.75"/>',
             '</g>',
-            '<g fill="#d4a0b8" filter="url(#oo-soft)">',
-              '<circle class="oo-splat d2" cx="760"  cy="640" r="3" opacity="0.6"/>',
-              '<circle class="oo-splat d4" cx="280"  cy="540" r="4" opacity="0.55"/>',
-              '<circle class="oo-splat d6" cx="1050" cy="260" r="3" opacity="0.5"/>',
+            '<g fill="#8b1538" filter="url(#oo-soft)">',
+              '<circle class="oo-splat d2" cx="760"  cy="640" r="3.5" opacity="0.7"/>',
+              '<circle class="oo-splat d4" cx="280"  cy="540" r="4"   opacity="0.6"/>',
+              '<circle class="oo-splat d6" cx="1050" cy="260" r="3"   opacity="0.6"/>',
+              '<circle class="oo-splat d8" cx="1240" cy="720" r="3.5" opacity="0.55"/>',
+            '</g>',
+            '<g fill="#f4e4c1" filter="url(#oo-soft)">',
+              '<circle class="oo-splat d3" cx="560"  cy="190" r="2.5" opacity="0.55"/>',
+              '<circle class="oo-splat d5" cx="1100" cy="180" r="2"   opacity="0.5"/>',
+              '<circle class="oo-splat d7" cx="200"  cy="280" r="2.5" opacity="0.5"/>',
             '</g>',
 
-            // O+O calligraphy (painted last, sitting above the strokes)
+            // ----- Layer 6: drifting pigment motes (slow upward float) -----
+            '<g fill="#ffd966">',
+              '<circle class="oo-mote m1" cx="200"  cy="800" r="1.6"/>',
+              '<circle class="oo-mote m2" cx="500"  cy="850" r="1.2"/>',
+              '<circle class="oo-mote m3" cx="900"  cy="820" r="1.8"/>',
+              '<circle class="oo-mote m4" cx="1200" cy="860" r="1.3"/>',
+              '<circle class="oo-mote m5" cx="350"  cy="780" r="1.0"/>',
+              '<circle class="oo-mote m6" cx="1100" cy="830" r="1.5"/>',
+              '<circle class="oo-mote m7" cx="700"  cy="870" r="1.1"/>',
+            '</g>',
+
+            // ----- Layer 7: O+O calligraphy (painted last, above strokes) -----
             '<g class="oo-logo" filter="url(#oo-brush)">',
-              '<circle pathLength="1" class="oo-o1"   cx="650" cy="460" r="118" stroke="#ffd966" stroke-width="18"/>',
-              '<g class="oo-plus" stroke="#ffd966" stroke-width="14" stroke-linecap="round">',
-                '<line pathLength="1" x1="800" y1="412" x2="800" y2="508"/>',
-                '<line pathLength="1" x1="752" y1="460" x2="848" y2="460"/>',
+              '<circle pathLength="1" class="oo-o1" cx="650" cy="460" r="112" stroke="#ffd966" stroke-width="16"/>',
+              '<g class="oo-plus" stroke="#ffd966" stroke-width="13" stroke-linecap="round">',
+                '<line pathLength="1" x1="800" y1="414" x2="800" y2="506"/>',
+                '<line pathLength="1" x1="754" y1="460" x2="846" y2="460"/>',
               '</g>',
-              '<circle pathLength="1" class="oo-o2"   cx="950" cy="460" r="118" stroke="#ffd966" stroke-width="18"/>',
+              '<circle pathLength="1" class="oo-o2" cx="950" cy="460" r="112" stroke="#ffd966" stroke-width="16"/>',
             '</g>',
 
-            // Final glint shimmer
-            '<circle class="oo-glint" cx="800" cy="460" r="180" fill="url(#oo-glint-g)"/>',
+            // ----- Layer 8: gold-leaf sheen — luminous bar sweeps across logo -----
+            '<rect class="oo-sheen" x="420" y="320" width="760" height="280" fill="url(#oo-sheen-g)"/>',
 
-            // Artist name and subtitle
-            '<text class="oo-text oo-name" x="800" y="700" text-anchor="middle"',
-              ' fill="#ffd966" font-family="Georgia, serif" font-size="46"',
+            // ----- Layer 9: final golden glint pulse -----
+            '<circle class="oo-glint" cx="800" cy="460" r="200" fill="url(#oo-glint-g)"/>',
+
+            // ----- Layer 10: artist name + subtitle -----
+            '<text class="oo-text oo-name" x="800" y="690" text-anchor="middle"',
+              ' fill="#f4e4c1" font-family="Georgia, serif" font-size="48"',
               ' letter-spacing="6" font-style="italic">Enriqueta Hueso</text>',
-            '<text class="oo-text oo-sub" x="800" y="752" text-anchor="middle"',
-              ' fill="#d4a0b8" font-family="Georgia, serif" font-size="20"',
-              ' letter-spacing="8">GALERÍA O+O · VALENCIA</text>'
+            '<text class="oo-text oo-sub" x="800" y="744" text-anchor="middle"',
+              ' fill="#d4a0b8" font-family="Georgia, serif" font-size="18"',
+              ' letter-spacing="10">GALERÍA O+O · VALENCIA</text>',
+
+            // ----- Layer 11: vermillion artist's seal — stamps into corner -----
+            '<g class="oo-seal">',
+              '<rect x="1320" y="700" width="86" height="86" rx="6" fill="#8b1538" filter="url(#oo-brush)"/>',
+              '<text x="1363" y="758" text-anchor="middle"',
+                ' fill="#f4e4c1" font-family="Georgia, serif" font-size="32"',
+                ' font-weight="bold" letter-spacing="-2">O+O</text>',
+            '</g>'
         ].join('');
 
         overlay.appendChild(svg);
@@ -803,7 +909,7 @@
         document.addEventListener('keydown', onKey, true);
 
         // Auto-dismiss after the composition has landed.
-        window.setTimeout(dismiss, 4800);
+        window.setTimeout(dismiss, 6400);
     }
 
     if (document.readyState === 'loading') {
