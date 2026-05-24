@@ -967,13 +967,13 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 1.5rem auto 1.75rem;
-    padding: 0.25rem 0;
+    margin: 0.75rem auto 1rem;
+    padding: 0;
 }
 
 .oo-mark img {
     display: block;
-    width: clamp(140px, 26vw, 240px);
+    width: clamp(180px, 32vw, 300px);
     height: auto;
     opacity: 0.92;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
@@ -986,7 +986,7 @@ main {
 }
 
 @media (max-width: 600px) {
-    .oo-mark img { width: clamp(120px, 38vw, 200px); }
+    .oo-mark img { width: clamp(160px, 48vw, 260px); }
 }
 
 /* ==== Critique cards (criticas.html) ==== */
