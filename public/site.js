@@ -642,3 +642,157 @@
         }
     });
 })();
+
+// ============================================================
+// Entry animation — "First Brushstroke"
+// Plays once per browser session on the first page rendered.
+// A painterly intro: sweeping abstract strokes settle into the
+// O+O calligraphy and the artist's name. Skipped by users with
+// prefers-reduced-motion, by Esc / Space / Enter, or by click.
+// ============================================================
+(function() {
+    var STORAGE_KEY = 'oo_intro_played_v1';
+    try {
+        if (sessionStorage.getItem(STORAGE_KEY) === '1') return;
+    } catch (e) { /* private mode: still play, just don't store */ }
+
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+        return;
+    }
+
+    function build() {
+        var SVG = 'http://www.w3.org/2000/svg';
+        var overlay = document.createElement('div');
+        overlay.className = 'oo-intro';
+        overlay.setAttribute('role', 'presentation');
+        overlay.setAttribute('aria-hidden', 'true');
+
+        var svg = document.createElementNS(SVG, 'svg');
+        svg.setAttribute('viewBox', '0 0 1600 900');
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        svg.setAttribute('aria-hidden', 'true');
+
+        svg.innerHTML = [
+            '<defs>',
+              '<radialGradient id="oo-bg" cx="50%" cy="42%" r="75%">',
+                '<stop offset="0%" stop-color="#4a0a2e"/>',
+                '<stop offset="55%" stop-color="#2a0115"/>',
+                '<stop offset="100%" stop-color="#0c0006"/>',
+              '</radialGradient>',
+              '<filter id="oo-brush" x="-10%" y="-10%" width="120%" height="120%">',
+                '<feTurbulence type="fractalNoise" baseFrequency="0.018 0.04" numOctaves="2" seed="3" result="t"/>',
+                '<feDisplacementMap in="SourceGraphic" in2="t" scale="11" xChannelSelector="R" yChannelSelector="G"/>',
+              '</filter>',
+              '<filter id="oo-soft" x="-20%" y="-20%" width="140%" height="140%">',
+                '<feGaussianBlur stdDeviation="1.6"/>',
+              '</filter>',
+              '<radialGradient id="oo-glint-g" cx="50%" cy="50%" r="50%">',
+                '<stop offset="0%" stop-color="#fff7d4" stop-opacity="0.9"/>',
+                '<stop offset="60%" stop-color="#ffd966" stop-opacity="0.25"/>',
+                '<stop offset="100%" stop-color="#ffd966" stop-opacity="0"/>',
+              '</radialGradient>',
+            '</defs>',
+
+            '<rect width="1600" height="900" fill="url(#oo-bg)"/>',
+
+            // Three sweeping abstract brushstrokes (painted in sequence)
+            '<g filter="url(#oo-brush)">',
+              '<path pathLength="1" class="oo-stroke s1" stroke="#ffd966" stroke-width="32"',
+                ' d="M 80 660 C 360 380, 720 220, 1040 320 S 1440 580, 1540 520"/>',
+              '<path pathLength="1" class="oo-stroke s2" stroke="#741b47" stroke-width="58" stroke-opacity="0.85"',
+                ' d="M 180 220 C 460 460, 820 720, 1180 540 S 1500 280, 1560 240"/>',
+              '<path pathLength="1" class="oo-stroke s3" stroke="#c9a84a" stroke-width="14"',
+                ' d="M 60 480 C 380 360, 660 600, 980 460 S 1380 360, 1560 440"/>',
+              '<path pathLength="1" class="oo-stroke s4" stroke="#8a2a55" stroke-width="22" stroke-opacity="0.75"',
+                ' d="M 240 800 C 540 660, 820 780, 1100 700 S 1440 760, 1540 720"/>',
+            '</g>',
+
+            // Splatter pigment
+            '<g fill="#ffd966" filter="url(#oo-soft)">',
+              '<circle class="oo-splat d1" cx="380"  cy="430" r="6"  opacity="0.8"/>',
+              '<circle class="oo-splat d2" cx="640"  cy="290" r="4"  opacity="0.7"/>',
+              '<circle class="oo-splat d3" cx="900"  cy="520" r="7"  opacity="0.85"/>',
+              '<circle class="oo-splat d4" cx="1180" cy="380" r="5"  opacity="0.65"/>',
+              '<circle class="oo-splat d5" cx="1310" cy="610" r="3.5" opacity="0.55"/>',
+              '<circle class="oo-splat d6" cx="500"  cy="710" r="4.5" opacity="0.7"/>',
+            '</g>',
+            '<g fill="#d4a0b8" filter="url(#oo-soft)">',
+              '<circle class="oo-splat d2" cx="760"  cy="640" r="3" opacity="0.6"/>',
+              '<circle class="oo-splat d4" cx="280"  cy="540" r="4" opacity="0.55"/>',
+              '<circle class="oo-splat d6" cx="1050" cy="260" r="3" opacity="0.5"/>',
+            '</g>',
+
+            // O+O calligraphy (painted last, sitting above the strokes)
+            '<g class="oo-logo" filter="url(#oo-brush)">',
+              '<circle pathLength="1" class="oo-o1"   cx="650" cy="460" r="118" stroke="#ffd966" stroke-width="18"/>',
+              '<g class="oo-plus" stroke="#ffd966" stroke-width="14" stroke-linecap="round">',
+                '<line pathLength="1" x1="800" y1="412" x2="800" y2="508"/>',
+                '<line pathLength="1" x1="752" y1="460" x2="848" y2="460"/>',
+              '</g>',
+              '<circle pathLength="1" class="oo-o2"   cx="950" cy="460" r="118" stroke="#ffd966" stroke-width="18"/>',
+            '</g>',
+
+            // Final glint shimmer
+            '<circle class="oo-glint" cx="800" cy="460" r="180" fill="url(#oo-glint-g)"/>',
+
+            // Artist name and subtitle
+            '<text class="oo-text oo-name" x="800" y="700" text-anchor="middle"',
+              ' fill="#ffd966" font-family="Georgia, serif" font-size="46"',
+              ' letter-spacing="6" font-style="italic">Enriqueta Hueso</text>',
+            '<text class="oo-text oo-sub" x="800" y="752" text-anchor="middle"',
+              ' fill="#d4a0b8" font-family="Georgia, serif" font-size="20"',
+              ' letter-spacing="8">GALERÍA O+O · VALENCIA</text>'
+        ].join('');
+
+        overlay.appendChild(svg);
+
+        var skip = document.createElement('button');
+        skip.type = 'button';
+        skip.className = 'oo-skip';
+        skip.textContent = 'Saltar';
+        skip.setAttribute('aria-label', 'Saltar animación de entrada');
+        overlay.appendChild(skip);
+
+        return { overlay: overlay, skip: skip };
+    }
+
+    function show() {
+        var parts = build();
+        var overlay = parts.overlay;
+        document.body.classList.add('oo-intro-active');
+        document.body.appendChild(overlay);
+
+        var removed = false;
+        function dismiss() {
+            if (removed) return;
+            removed = true;
+            try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+            overlay.classList.add('is-leaving');
+            window.setTimeout(function() {
+                document.body.classList.remove('oo-intro-active');
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                document.removeEventListener('keydown', onKey, true);
+            }, 750);
+        }
+        function onKey(e) {
+            if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                dismiss();
+            }
+        }
+
+        overlay.addEventListener('click', dismiss);
+        parts.skip.addEventListener('click', function(e) { e.stopPropagation(); dismiss(); });
+        document.addEventListener('keydown', onKey, true);
+
+        // Auto-dismiss after the composition has landed.
+        window.setTimeout(dismiss, 4800);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', show, { once: true });
+    } else {
+        show();
+    }
+})();
