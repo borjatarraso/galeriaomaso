@@ -1431,24 +1431,6 @@ iframe[width] {
     margin-bottom: 1rem;
 }
 
-.artist-gallery {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.artist-gallery img {
-    width: 100% !important;
-    height: 200px !important;
-    object-fit: cover !important;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    transition: border-color var(--transition);
-}
-
-.artist-gallery img:hover { border-color: var(--accent); }
-
 /* Artist bio - was wrapped in <a> link, now proper text */
 .artist-info-toggle h4 {
     color: var(--accent) !important;
