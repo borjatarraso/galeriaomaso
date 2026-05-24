@@ -578,11 +578,12 @@
             'Razón de contacto: ' + razonLabel + '\n\n' +
             mensaje
         );
-        window.location.href = 'mailto:' + EMAIL + '?subject=' + subject + '&body=' + body;
-
-        success.classList.add('show');
+        if (success) {
+            success.classList.add('show');
+            setTimeout(function() { success.classList.remove('show'); }, 6000);
+        }
         form.reset();
-        setTimeout(function() { success.classList.remove('show'); }, 6000);
+        window.location.href = 'mailto:' + EMAIL + '?subject=' + subject + '&body=' + body;
     });
 })();
 
@@ -594,6 +595,7 @@
     if (!modal) return;
     var content = modal.querySelector('#criticaModalContent');
     var panel = modal.querySelector('.critica-modal-panel');
+    if (!content || !panel) return;
     var lastTrigger = null;
 
     var FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]),' +

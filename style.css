@@ -415,15 +415,7 @@ main {
     text-align: center !important;
 }
 
-/* Override Blogger grey table backgrounds */
-.page-content table {
-    width: 100% !important;
-    border-collapse: collapse;
-    margin: 1.5rem 0;
-    background: var(--bg-card) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: var(--radius);
-}
+/* Override Blogger inline-styled tables (real table.bgcolor or inline background only) */
 .page-content table[bgcolor],
 .page-content table[style*="background"] {
     background: rgba(107, 29, 66, 0.3) !important;
@@ -507,11 +499,6 @@ main {
     line-height: 1.75 !important;
     background-color: transparent !important;
 }
-.page-content b, .page-content strong {
-    font-weight: 700 !important;
-    color: var(--text-bright) !important;
-}
-.page-content i, .page-content em { font-style: italic !important; }
 .page-content a { color: var(--accent) !important; font-size: inherit !important; }
 
 /* Images always centered */
@@ -532,11 +519,12 @@ main {
 }
 .page-content hr + * { margin-top: 0; }
 
-/* Tables inside content */
+/* Tables inside content (consolidated; supersedes earlier rule) */
 .page-content table {
     width: 100% !important;
     background: transparent !important;
     border: none !important;
+    border-collapse: collapse;
     margin: 1rem 0;
 }
 .page-content td {
@@ -545,6 +533,7 @@ main {
     vertical-align: top !important;
 }
 
+/* Images: centered, capped, contained (consolidated) */
 .page-content img {
     display: block;
     margin: 1.5rem auto;
@@ -578,10 +567,6 @@ main {
     background: transparent !important;
     font-family: inherit !important;
 }
-
-/* Re-apply bold/italic styling that the !important above might override */
-.page-content b, .page-content strong { font-weight: 700 !important; }
-.page-content i, .page-content em { font-style: italic !important; }
 
 /* Uniform thumbnail grid for Blogger / WordPress galleries.
    object-fit:contain preserves aspect ratio; neutral background fills the
@@ -835,12 +820,7 @@ main {
     }
 }
 
-/* Tables in content */
-.page-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-}
+/* Table cell padding (table rule is consolidated above) */
 .page-content td, .page-content th {
     padding: 0.5rem;
     border: 1px solid var(--border) !important;
@@ -2091,3 +2071,5 @@ body.oo-intro-active { overflow: hidden; }
 @media (max-width: 600px) {
     .oo-intro .oo-skip { bottom: 14px; right: 14px; font-size: 0.7rem; padding: 6px 14px; }
 }
+
+
