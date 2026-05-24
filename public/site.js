@@ -5,7 +5,8 @@
 (function() {
     var btn = document.querySelector('.menu-toggle');
     if (!btn) return;
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
         var topnav = btn.closest('.gal-topnav');
         if (topnav) topnav.classList.toggle('open');
         var links = (topnav || document).querySelector('.nav-links');
@@ -127,7 +128,7 @@
     var langDropdown = document.getElementById('galLangDropdown');
     var langLabel = document.getElementById('galLangLabel');
     var langFlag = document.getElementById('galLangFlag');
-    if (!langToggle) return;
+    if (!langToggle || !langDropdown) return;
 
     var currentLang = 'es';
     var langLabels = { es:'ES', en:'EN', de:'DE', fr:'FR', it:'IT', zh:'中', ja:'日', fa:'فا' };
@@ -154,6 +155,13 @@
         langDropdown.classList.remove('open');
         var md = document.getElementById('galModeDropdown');
         if (md) md.classList.remove('open');
+        // Also close the mobile hamburger menu if open
+        var topnav = document.querySelector('.gal-topnav.open');
+        if (topnav) {
+            topnav.classList.remove('open');
+            var navLinks = topnav.querySelector('.nav-links.open');
+            if (navLinks) navLinks.classList.remove('open');
+        }
     });
 
     for (var i = 0; i < options.length; i++) {
@@ -773,6 +781,14 @@
                 document.body.classList.remove('oo-intro-active');
                 if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
                 document.removeEventListener('keydown', onKey, true);
+                // Restore focus to a sensible landmark for keyboard users.
+                var main = document.querySelector('main')
+                    || document.querySelector('h1')
+                    || document.body;
+                if (main && typeof main.focus === 'function') {
+                    if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+                    try { main.focus({ preventScroll: true }); } catch (e) { main.focus(); }
+                }
             }, 750);
         }
         function onKey(e) {
