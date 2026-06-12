@@ -1440,3 +1440,45 @@
         show();
     }
 })();
+
+/* ============================================================
+   QR de contacto — visor ampliado (contacta.html)
+   ============================================================ */
+(function() {
+    'use strict';
+
+    function init() {
+        var trigger = document.getElementById('galQrTrigger');
+        var dialog = document.getElementById('galQrDialog');
+        if (!trigger || !dialog) return;
+
+        if (typeof dialog.showModal !== 'function') {
+            // Navegadores sin <dialog>: abrir la imagen a tamaño completo.
+            trigger.addEventListener('click', function() {
+                var img = trigger.querySelector('img');
+                if (img) window.open(img.src, '_blank', 'noopener');
+            });
+            return;
+        }
+
+        trigger.addEventListener('click', function() {
+            dialog.showModal();
+        });
+
+        var closeBtn = dialog.querySelector('.qr-dialog-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() { dialog.close(); });
+        }
+
+        // Clic fuera de la imagen (en el backdrop) cierra el visor.
+        dialog.addEventListener('click', function(e) {
+            if (e.target === dialog) dialog.close();
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
+})();

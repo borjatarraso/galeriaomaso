@@ -581,8 +581,8 @@ main {
     margin: 0.5rem !important;
     vertical-align: top;
     box-sizing: border-box;
-    background: #f7f7f5;
-    border: 1px solid var(--border, #e6e6e6);
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
     border-radius: 6px;
     overflow: hidden;
 }
@@ -596,7 +596,7 @@ main {
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
-    background: #f7f7f5 !important;
+    background: var(--bg-darker) !important;
     border: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
@@ -629,7 +629,7 @@ main {
 .page-content dt.gallery-icon a:hover img,
 .page-content table.tr-caption-container a:hover img {
     transform: scale(1.03);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
 }
 
 /* Hide empty / image-less gallery placeholders */
@@ -674,8 +674,8 @@ main {
     height: 220px !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #f7f7f5 !important;
-    border: 1px solid var(--border, #e6e6e6) !important;
+    background: var(--bg-darker) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 6px;
     overflow: hidden;
     line-height: 0;
@@ -692,7 +692,7 @@ main {
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
-    background: #f7f7f5 !important;
+    background: var(--bg-darker) !important;
     border: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
@@ -703,7 +703,7 @@ main {
 .page-content .auto-gallery > dt.gallery-icon:hover,
 .page-content .auto-gallery > table.tr-caption-container:hover {
     transform: scale(1.03);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
 }
 .page-content .auto-gallery > a:hover > img,
 .page-content .auto-gallery > dl.gallery-item:hover img,
@@ -2073,3 +2073,292 @@ body.oo-intro-active { overflow: hidden; }
 }
 
 
+
+/* ============================================================
+   Polish pass (junio 2026) — refinamiento visual global
+   ============================================================ */
+
+/* --- Page headers: flourish dorado en lugar de línea dura --- */
+.page-header {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 2.4rem;
+}
+.page-header h1::after,
+.page-header h2::after {
+    content: "";
+    display: block;
+    width: 96px;
+    height: 2px;
+    margin: 1.05rem auto 0;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    border-radius: 1px;
+}
+
+/* --- Hero: brillo sutil superior --- */
+.hero {
+    background:
+        radial-gradient(ellipse 65% 60% at 50% 0%, rgba(255, 217, 102, 0.07), transparent 70%),
+        linear-gradient(135deg, rgba(74,10,46,0.4) 0%, rgba(55,2,28,0.2) 100%);
+}
+
+/* --- Tarjetas de exposiciones: zoom suave de imagen al pasar --- */
+.post-card-image {
+    transition: transform 0.5s ease;
+    clip-path: inset(0);
+}
+.post-card:hover .post-card-image {
+    transform: scale(1.045);
+}
+@media (prefers-reduced-motion: reduce) {
+    .post-card-image { transition: none; }
+    .post-card:hover .post-card-image { transform: none; }
+}
+
+/* --- Noticias: cada noticia como tarjeta --- */
+.news-item {
+    background: rgba(74, 10, 46, 0.45);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.3rem;
+    transition: border-color var(--transition);
+}
+.news-item:hover { border-color: var(--border-light); }
+.news-item:last-child { border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.news-item br { margin-bottom: 0.35rem; }
+.news-item > div:first-child > b:first-child,
+.news-item > div:first-child > div:first-child {
+    color: var(--text-bright) !important;
+}
+
+/* --- Secciones de contenido (cursos, ferias…): mismo tratamiento --- */
+.content-section {
+    background: rgba(74, 10, 46, 0.45);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.6rem 1.75rem;
+    margin-bottom: 1.3rem;
+    transition: border-color var(--transition);
+}
+.content-section:hover { border-color: var(--border-light); }
+.content-section:last-child { border-bottom: 1px solid var(--border); margin-bottom: 0; }
+
+/* --- Miniaturas de galería heredadas: fondo oscuro, no blanco --- */
+.page-content .gallery-item,
+.page-content dl.gallery-item,
+.page-content dt.gallery-icon {
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+}
+.page-content .gallery-item img,
+.page-content dl.gallery-item img,
+.page-content dt.gallery-icon img,
+.page-content table.tr-caption-container img {
+    background: var(--bg-darker) !important;
+}
+
+/* --- Enlaces: tarjetas equilibradas, iconos uniformes --- */
+.enlaces-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.enlace-card {
+    padding: 2rem 1.25rem 1.6rem;
+    justify-content: center;
+    min-height: 160px;
+    background: rgba(74, 10, 46, 0.45);
+}
+.enlace-card:hover {
+    background: var(--bg-card);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+}
+.enlace-card img { filter: none; border-radius: 4px; background: #fff; padding: 6px; }
+.enlace-card span { font-size: 0.92rem; letter-spacing: 0.4px; }
+
+/* --- Cómo llegar: tarjeta de visita + mapa grande --- */
+.visit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    gap: 1.75rem;
+    align-items: stretch;
+    margin-bottom: 1.75rem;
+}
+.visit-photo {
+    margin: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.visit-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    object-fit: cover;
+    border-radius: 0;
+    margin: 0 !important;
+}
+.visit-card {
+    background: rgba(74, 10, 46, 0.45);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.9rem;
+}
+.visit-card h3 {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+    color: var(--accent) !important;
+}
+.visit-card p { margin: 0 !important; }
+.visit-card .visit-label {
+    display: block;
+    font-size: 0.72rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--text-muted) !important;
+    margin-bottom: 0.15rem;
+}
+.map-embed {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.map-embed iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: 0;
+}
+.map-footnote {
+    text-align: center;
+    margin-top: 0.9rem;
+}
+@media (max-width: 760px) {
+    .visit-grid { grid-template-columns: 1fr; }
+    .map-embed iframe { height: 320px; }
+}
+
+/* --- Scrollbar a juego con el tema --- */
+html {
+    scrollbar-color: var(--border-light) var(--bg-darker);
+}
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-darker); }
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 6px;
+    border: 2px solid var(--bg-darker);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+/* --- Foco visible accesible y coherente --- */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* --- Contacto: fotos apiladas junto a la tarjeta de datos --- */
+.visit-photos {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.visit-photos .visit-photo { flex: 1; min-height: 0; }
+.visit-photos .visit-photo img { min-height: 150px; }
+
+/* --- Contacto: tarjeta QR con visor ampliado --- */
+.qr-section {
+    text-align: center;
+    margin: 2.5rem auto;
+}
+.qr-trigger {
+    display: inline-block;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 12px;
+    cursor: zoom-in;
+}
+.qr-trigger img {
+    display: block;
+    width: 250px;
+    max-width: 78vw;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.qr-trigger:hover img,
+.qr-trigger:focus-visible img {
+    transform: scale(1.035);
+    border-color: var(--border-light);
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.55);
+}
+.qr-caption {
+    margin-top: 0.9rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.qr-dialog {
+    margin: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+}
+.qr-dialog::backdrop {
+    background: rgba(26, 1, 13, 0.88);
+    backdrop-filter: blur(5px);
+}
+.qr-dialog img {
+    display: block;
+    width: auto;
+    max-width: min(92vw, 560px);
+    max-height: 88vh;
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+}
+.qr-dialog[open] img {
+    animation: qr-zoom-in 0.28s ease;
+}
+.qr-dialog-close {
+    position: absolute;
+    top: -0.6rem;
+    right: -0.6rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    color: var(--text-bright);
+    border: 1px solid var(--border-light);
+    border-radius: 50%;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.qr-dialog-close:hover {
+    background: var(--border);
+    transform: scale(1.08);
+}
+@keyframes qr-zoom-in {
+    from { transform: scale(0.82); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .qr-trigger img,
+    .qr-dialog-close { transition: none; }
+    .qr-trigger:hover img,
+    .qr-trigger:focus-visible img { transform: none; }
+    .qr-dialog[open] img { animation: none; }
+}
