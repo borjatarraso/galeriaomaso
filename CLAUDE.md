@@ -1,5 +1,25 @@
 # galeriaomaso — project-local rules
 
+## Guidance map
+
+This is a **static HTML/CSS/JS art-gallery site — no CMS, no framework, no
+build step.** Before deep work, load the relevant scoped doc:
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — how the modules fit together, dataflow, external deps.
+- [`ROADMAP.md`](ROADMAP.md) — current state, known limitations, candidate next steps.
+- [`DESIGN.md`](DESIGN.md) — theme tokens, layout, components, entry animation.
+- [`public/CLAUDE.md`](public/CLAUDE.md) — the Cloudflare deploy root (the site itself).
+- [`scripts/CLAUDE.md`](scripts/CLAUDE.md) — the manual Python SEO/build tooling.
+- `docs/` — [content-model](docs/content-model.md), [seo-pipeline](docs/seo-pipeline.md),
+  [deploy-pipeline](docs/deploy-pipeline.md), [frontend](docs/frontend.md),
+  [operations](docs/operations.md).
+
+**Load-bearing conventions:** generated regions live in
+`<!-- gal-*:start/end -->` markers (edit source/script, re-run — never
+hand-patch); `style.css` is the deploy fingerprint asset; `style.css` and
+`site.js` are mirrored `public/` → root **manually** (scripts mirror HTML
+only).
+
 ## Local preview server
 
 - **Always serve on port `5253`.** This is the project's assigned port in
