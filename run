@@ -3,6 +3,7 @@
 #
 #   ./run                 serve the site at http://127.0.0.1:5253/
 #   ./run open            open index.html in the browser (no server)
+#   ./run help            this text
 #   PORT=8123 ./run       pick another port
 #
 # Everything is relative to this file, so it works from any directory.
@@ -17,6 +18,8 @@ case "${1:-serve}" in
     exec python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$DIR" ;;
   open)
     exec xdg-open "$DIR/index.html" ;;
+  help|-h|--help)
+    grep '^#' "$0" | sed -E '1d; s/^# ?//' ;;
   *)
-    echo "usage: ./run [serve|open]" >&2; exit 2 ;;
+    echo "usage: ./run [serve|open|help]" >&2; exit 2 ;;
 esac
