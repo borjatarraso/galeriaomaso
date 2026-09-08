@@ -411,6 +411,12 @@ Author: **Borja Tarraso** &nbsp;`<borja.tarraso@member.fsf.org>`
 
 This repository is released under the **BSD-3-Clause** license.
 
+## Documentation
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — module map and data flow
+- [`ROADMAP.md`](ROADMAP.md) — current direction and open threads
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — how to contribute
+
 <!-- LYNX-EP-FOOTER:BEGIN -->
 
 ---
@@ -419,7 +425,7 @@ This repository is released under the **BSD-3-Clause** license.
 
 New here, or coming back after a while? Read [`index.ep.md`](index.ep.md) (or open [`index.ep.html`](index.ep.html) in a browser) — the standard card that answers what this is, where to look first, and how to run it, in the same shape for every project.
 
-🟠 **PAUSED** · last touched **12 June 2026**
+🟡 **IDLE** · last touched **15 August 2026**
 
 ## Ownership
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# ./run — one command to start galeriaomaso.
+#
+#   ./run                 serve the site at http://127.0.0.1:5253/
+#   ./run open            open index.html in the browser (no server)
+#   PORT=8123 ./run       pick another port
+#
+# Everything is relative to this file, so it works from any directory.
+set -euo pipefail
+cd "$(dirname "$(readlink -f "$0")")"
+
+PORT="${PORT:-5253}"
+DIR="."
+case "${1:-serve}" in
+  serve)
+    echo "· http://127.0.0.1:$PORT/  (Ctrl-C stops)" >&2
+    exec python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$DIR" ;;
+  open)
+    exec xdg-open "$DIR/index.html" ;;
+  *)
+    echo "usage: ./run [serve|open]" >&2; exit 2 ;;
+esac

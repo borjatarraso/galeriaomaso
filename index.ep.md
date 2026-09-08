@@ -2,12 +2,12 @@
 ep_version: 1
 project: galeriaomaso
 title: Galería O+O — galeriaomaso.com
-status: PAUSED
-last_touched: 2026-06-12
-last_touched_text: 12 June 2026
+status: IDLE
+last_touched: 2026-08-15
+last_touched_text: 15 August 2026
 section: top
 category: website
-generated: 2026-08-15
+generated: 2026-09-08
 ep_locked: false   # set true and this file is never regenerated
 ---
 
@@ -15,7 +15,7 @@ ep_locked: false   # set true and this file is never regenerated
 
 > Galería O+O (Oriente y Occidente) gallery site
 
-🟠 **PAUSED** · last touched **12 June 2026** (last commit)
+🟡 **IDLE** · last touched **15 August 2026** (last commit)
 
 ---
 
@@ -85,7 +85,7 @@ The deploy token only needs:
 
 ```bash
 cd ~/claude/galeriaomaso
-xdg-open index.html                   # static build — no server needed
+./run                                 # project runner
 ```
 
 ## The rest of it
@@ -122,4 +122,4 @@ xdg-open index.html                   # static build — no server needed
 Part of the LINCE company · © All rights reserved
 
 
-<sub>Standard entry-point card (`index.ep.md`, format v1) — generated 2026-08-15 by Lynx Factory. Regenerating overwrites this file unless `ep_locked: true`.</sub>
+<sub>Standard entry-point card (`index.ep.md`, format v1) — generated 2026-09-08 by Lynx Factory. Regenerating overwrites this file unless `ep_locked: true`.</sub>
