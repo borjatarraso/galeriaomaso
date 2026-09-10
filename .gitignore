@@ -41,3 +41,10 @@ Thumbs.db
 *.bak
 *.orig
 *.tmp
+
+# >>> lynx-factory local metadata — never commit (see INDEX.md)
+/INDEX.md
+/DESCRIPTION.md
+/USERGUIDE.md
+/BACKLOG.md
+# <<< lynx-factory local metadata
