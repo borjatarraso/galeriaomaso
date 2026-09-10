@@ -3,7 +3,7 @@
 from pathlib import Path
 from datetime import datetime, timezone
 
-ROOT = Path('/home/overdrive/claude/galeriaomaso')
+ROOT = Path('/home/overdrive/devel/galeriaomaso')
 SITE = 'https://galeriaomaso.com'
 PUB = ROOT / 'public'
 

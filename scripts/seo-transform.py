@@ -10,7 +10,7 @@ import re
 import html
 import json
 
-ROOT = Path('/home/overdrive/claude/galeriaomaso')
+ROOT = Path('/home/overdrive/devel/galeriaomaso')
 SITE = 'https://galeriaomaso.com'
 ORG_NAME = 'Galería O+O 东西方画廊'
 ORG_DESC = ('Galería O+O — Centro de referencia internacional de arte entre Oriente y Occidente. '

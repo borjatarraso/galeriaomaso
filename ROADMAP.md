@@ -27,7 +27,7 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the pieces fit together.
 
 1. **Hard-coded absolute paths in the SEO scripts.**
    `seo-transform.py`, `seo-files.py`, and `seo-plus.py` set
-   `ROOT = Path('/home/overdrive/claude/galeriaomaso')`. The scripts only
+   `ROOT = Path('/home/overdrive/devel/galeriaomaso')`. The scripts only
    run as-is on the maintainer's machine; a contributor on a different path
    must edit the constant. (`generate_qr_codes.py` already derives `ROOT`
    from `__file__` and is portable.)

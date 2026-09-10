@@ -52,7 +52,7 @@ already carry the canonical metadata that `seo-transform.py` writes.
    import only the Python standard library — no `pip install` needed.
    Don't add third-party dependencies to them. (`generate_qr_codes.py`
    does need `qrcode` + `Pillow`; that's the only script with deps.)
-4. **Paths are currently absolute** (`ROOT = Path('/home/overdrive/claude/galeriaomaso')`
+4. **Paths are currently absolute** (`ROOT = Path('/home/overdrive/devel/galeriaomaso')`
    in the SEO scripts; `generate_qr_codes.py` derives `ROOT` from
    `__file__`). If you touch these, don't silently change the resolution
    behavior — see [`../ROADMAP.md`](../ROADMAP.md).

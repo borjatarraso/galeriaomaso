@@ -17,7 +17,7 @@ from pathlib import Path
 import re
 import html
 
-ROOT = Path('/home/overdrive/claude/galeriaomaso')
+ROOT = Path('/home/overdrive/devel/galeriaomaso')
 PUB = ROOT / 'public'
 
 PERF_START = '<!-- gal-perf:start -->'

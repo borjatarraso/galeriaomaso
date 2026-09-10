@@ -84,7 +84,7 @@ The deploy token only needs:
 ## Run it
 
 ```bash
-cd ~/claude/galeriaomaso
+cd ~/devel/galeriaomaso
 ./run                                 # project runner
 ```
 
