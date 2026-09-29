@@ -21,6 +21,13 @@ Bilingual (EN/ES) art-gallery website for **Galería Oriente y Occidente**.
 
 ---
 
+## Quick install
+
+```bash
+make    # verify the preview server (and build the site first if needed)
+./run   # start with the defaults
+```
+
 ## How a content change reaches visitors
 
 ```

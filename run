@@ -1,17 +1,57 @@
 #!/usr/bin/env bash
 # ./run — one command to start galeriaomaso.
 #
-#   ./run                 serve the site at http://127.0.0.1:5253/
+#   ./run                 serve the site at http://127.0.0.1:7792/
 #   ./run open            open index.html in the browser (no server)
 #   ./run help            this text
 #   PORT=8123 ./run       pick another port
+#   
+#   RUN_MODE=deps ./run    verify the python3 preview server (what make runs)
+#   RUN_MODE=check ./run   verify the toolchain
 #
 # Everything is relative to this file, so it works from any directory.
 set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")"
 
-PORT="${PORT:-5253}"
+PORT="${PORT:-7792}"
 DIR="."
+BUILD=
+DEPS=
+ensure_built() {
+    [ -z "$BUILD" ] && return 0
+    [ -f "$DIR/index.html" ] && return 0
+    if [ -n "$DEPS" ] && ! command -v uv >/dev/null 2>&1; then
+        echo "✗ uv not found — needed to build this site (https://docs.astral.sh/uv/)" >&2
+        exit 1
+    fi
+    echo "· building $DIR (not built yet)…" >&2
+    eval "$BUILD"
+}
+ensure_deps() {
+    command -v python3 >/dev/null 2>&1 || {
+        echo "✗ python3 not found — install Python 3 first (python3 package)" >&2
+        exit 1
+    }
+    [ -n "$DEPS" ] && eval "$DEPS"
+    ensure_built
+}
+run_check() {
+    command -v python3 >/dev/null 2>&1 || {
+        echo "✗ python3 not found — install Python 3 first (python3 package)" >&2
+        exit 1
+    }
+    if [ -n "$BUILD" ] && [ ! -f "$DIR/index.html" ] && [ -n "$DEPS" ] \
+       && ! command -v uv >/dev/null 2>&1; then
+        echo "✗ uv not found — needed to build $DIR on a fresh clone (https://docs.astral.sh/uv/)" >&2
+        exit 1
+    fi
+    echo "· toolchain OK (python3 serves the site$( [ -n "$BUILD" ] && echo "; $BUILD builds it"))" >&2
+}
+case "${RUN_MODE:-}" in
+    deps)  ensure_deps; echo "· dependencies ready" >&2; exit 0 ;;
+    check) run_check; exit 0 ;;
+esac
+ensure_built
 case "${1:-serve}" in
   serve)
     echo "· http://127.0.0.1:$PORT/  (Ctrl-C stops)" >&2
