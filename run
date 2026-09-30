@@ -5,7 +5,7 @@
 #   ./run open            open index.html in the browser (no server)
 #   ./run help            this text
 #   PORT=8123 ./run       pick another port
-#   
+#
 #   RUN_MODE=deps ./run    verify the python3 preview server (what make runs)
 #   RUN_MODE=check ./run   verify the toolchain
 #
